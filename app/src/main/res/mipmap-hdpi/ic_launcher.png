@@ -1,0 +1,81 @@
+package com.wowza.gocoder.sdk.sampleapp;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.GestureDetectorCompat;
+import android.view.MotionEvent;
+import android.view.View;
+
+import com.wowza.gocoder.sdk.api.WowzaGoCoder;
+import com.wowza.gocoder.sdk.api.broadcast.WOWZBroadcast;
+import com.wowza.gocoder.sdk.api.broadcast.WOWZBroadcastConfig;
+import com.wowza.gocoder.sdk.api.devices.WOWZAudioDevice;
+import com.wowza.gocoder.sdk.api.devices.WOWZCamera;
+import com.wowza.gocoder.sdk.api.devices.WOWZCameraView;
+import com.wowza.gocoder.sdk.api.errors.WOWZError;
+import com.wowza.gocoder.sdk.sampleapp.ui.AutoFocusListener;
+import com.wowza.gocoder.sdk.sampleapp.ui.MultiStateButton;
+import com.wowza.gocoder.sdk.sampleapp.ui.TimerView;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity {
+
+    // The top-level GoCoder API interface
+    private WowzaGoCoder goCoder;
+
+    // The GoCoder SDK camera view
+    private WOWZCameraView goCoderCameraView;
+
+    // The GoCoder SDK audio device
+    private WOWZAudioDevice goCoderAudioDevice;
+
+    // The GoCoder SDK broadcaster
+    private WOWZBroadcast goCoderBroadcaster;
+
+    // The broadcast configuration settings
+    private WOWZBroadcastConfig goCoderBroadcastConfig;
+
+    // Properties needed for Android 6+ permissions handling
+    private static final int PERMISSIONS_REQUEST_CODE = 0x1;
+    private boolean mPermissionsGranted = true;
+    private String[] mRequiredPermissions = new String[] {
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.myactivity_main);
+
+        // Initialize the GoCoder SDK
+        goCoder = WowzaGoCoder.init(getApplicationContext(), "GOSK-AD46-010C-1C4C-DE58-6CE4");
+
+        if (goCoder == null) {
+            // If initialization failed, retrieve the last error and display it
+            WOWZError goCoderInitError = WowzaGoCoder.getLastError();
+            Toast.makeText(this,
+                    "GoCoder SDK error: " + goCoderInitError.getErrorDescription(),
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+    }
+
+    //
+// Enable Android's immersive, sticky full-screen mode
+//
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        View rootView = getWindow().getDecorView().findViewById(android.R.id.content);
+        if (rootView != null)
+            rootView.setSystemUiVisibility(
+    

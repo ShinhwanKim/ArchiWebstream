@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:padding="5dp"
+        android:background="#000000"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:text="방송 정보 입력"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="제목"
+        android:textSize="20dp"
+        android:textColor="#000000"/>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:layout_marginTop="3dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/SignupActivity_edittext_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:inputType="textPassword"
+            android:maxLength="25"
+            android:hint="비밀번호"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <EditText
+        android:id="@+id/editboxBroadcast_editText_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="제목"
+        android:inputType="textEmailAddress" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="방송자"
+        android:textSize="20dp"
+        android:textColor="#000000" />
+
+    <EditText
+        android:id="@+id/editboxBroadcast_editText_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="방송자" />
+
+
+
+
+
+</LinearLayout>

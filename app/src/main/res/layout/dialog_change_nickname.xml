@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorDark"
+        android:text="닉네임 변경하기"
+        android:textColor="@color/colorWhite"
+        android:padding="15dp"
+        android:gravity="center"
+        android:textSize="@dimen/activity_header_text_size"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="8dp"
+        android:text="*4~16자의 영문자,숫자,한글 모두 사용 가능합니다. "
+        android:textSize="@dimen/information_text_size"/>
+
+    <EditText
+        android:id="@+id/dialog_change_nickname_editText_input_nickname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:inputType="text"
+        android:maxLength="16"
+        android:maxLines="1"
+        android:hint="변경할 닉네임을 입력해주세요"/>
+
+    <TextView
+        android:id="@+id/dialog_change_nickname_alert_nickname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:textColor="#E91E63"
+        android:text="유효하지 않은 이메일입니다."
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/dialog_change_nickname_button_chagecomplete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:text="변경 완료" />
+
+</LinearLayout>

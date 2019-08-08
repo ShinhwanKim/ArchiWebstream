@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--<item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/title_home" />-->
+
+    <item
+        android:id="@+id/bottom_navigation_live"
+        android:icon="@drawable/ic_live_tv_black_24dp"
+        android:title="생방송"/>
+
+    <item
+        android:id="@+id/bottom_navigation_vod"
+        android:icon="@drawable/ic_play_arrow_black_24dp"
+        android:title="녹화방송" />
+
+    <item
+        android:id="@+id/bottom_navigation_subscribe"
+        android:icon="@drawable/ic_subscriptions_black_24dp"
+        android:title="구독" />
+
+    <item
+        android:id="@+id/bottom_navigation_broadcast"
+        android:icon="@drawable/ic_videocam_black_24dp"
+        android:title="방송하기" />
+
+</menu>
