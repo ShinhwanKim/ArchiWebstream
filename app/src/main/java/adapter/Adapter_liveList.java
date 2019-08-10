@@ -61,7 +61,7 @@ public class Adapter_liveList extends RecyclerView.Adapter<Adapter_liveList.Cust
     @Override
     public void onBindViewHolder(@NonNull CustomViewHolder holder,final int position) {
         holder.txtTitle.setText("[생방송]"+mList.get(position).getTitle());
-        holder.txtHost.setText(mList.get(position).getHost());
+        holder.txtHost.setText(mList.get(position).getHostNickname());
 
         if(!mList.get(position).getPassword().equals("")){
             holder.imgLock.setVisibility(View.VISIBLE);

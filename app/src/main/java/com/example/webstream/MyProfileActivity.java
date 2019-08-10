@@ -147,6 +147,11 @@ public class MyProfileActivity extends Activity
     private String currentPhotoPath;//실제 사진 파일 경로
     String mImageCaptureName;//이미지 이름
 
+    String getId ;
+    String getNickname ;
+    String getEmail ;
+    String getProfile ;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,6 +221,7 @@ public class MyProfileActivity extends Activity
                     case CHECKNICKNAME_POSSIBLE:
                         txtAlertNickname.setVisibility(View.GONE);
                         txtNickname.setText(strChangeInputNickname);
+                        getNickname = strChangeInputNickname;
                         Toast.makeText(MyProfileActivity.this, "닉네임이 변경되었습니다.", Toast.LENGTH_SHORT).show();
                         break;
                     case CHECKNICKNAME_IMPOSSIBLE:
@@ -429,10 +435,10 @@ public class MyProfileActivity extends Activity
                     String dummyData = getUserData.getString("userInfo");
                     JSONArray getUserDataArray = new JSONArray(dummyData);
                     JSONObject getUserData2 = getUserDataArray.getJSONObject(0);
-                    String getId = getUserData2.getString("id");
-                    String getNickname = getUserData2.getString("nickname");
-                    String getEmail = getUserData2.getString("email");
-                    String getProfile = getUserData2.getString("profileRoute");
+                    getId = getUserData2.getString("id");
+                    getNickname = getUserData2.getString("nickname");
+                    getEmail = getUserData2.getString("email");
+                    getProfile = getUserData2.getString("profileRoute");
 
                     setLog("유저아이디 : "+getId);
                     setLog("유저닉네임 : "+getNickname);
@@ -473,6 +479,8 @@ public class MyProfileActivity extends Activity
         changeNickDialog.setView(editboxview);
         final Button changeComplete = editboxview.findViewById(R.id.dialog_change_nickname_button_chagecomplete);
         final EditText etxtInputNickname = editboxview.findViewById(R.id.dialog_change_nickname_editText_input_nickname);
+        etxtInputNickname.setText(getNickname);
+        etxtInputNickname.setSelection(etxtInputNickname.length());
         txtAlertNickname = editboxview.findViewById(R.id.dialog_change_nickname_alert_nickname);
 
         AlertDialog dialogChangeNicakname = changeNickDialog.create();
@@ -607,6 +615,9 @@ public class MyProfileActivity extends Activity
     }
 
     private void ChangeProfileOriginal(){
+        String chaneProfileUrl = "http://13.124.223.128/change/changeProfile.php";
+        sendData(loginedUser,chaneProfileUrl,CHANGE_PROFILE);
+        /*
         AlertDialog.Builder alertDialogProfile = new AlertDialog.Builder(MyProfileActivity.this);
         alertDialogProfile.setTitle("기본 이미지로 변경")
                 .setMessage("기본 이미지로 변경 시 원래의 프로필을 복구할 수 없습니다. 진행하시겠습니까?");
@@ -625,7 +636,7 @@ public class MyProfileActivity extends Activity
                 setLog("프로필 변경 취소버튼");
             }
         });
-        alertDialogProfile.show();
+        alertDialogProfile.show();*/
     }
 
     @Override

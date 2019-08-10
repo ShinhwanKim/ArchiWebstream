@@ -9,6 +9,15 @@ public class DataList_liveList {
     private String routeThumbnail;
     private String routeStream;
     private String password;
+    private String hostNickname;
+
+    public String getHostNickname() {
+        return hostNickname;
+    }
+
+    public void setHostNickname(String hostNickname) {
+        this.hostNickname = hostNickname;
+    }
 
     public String getPassword() {
         return password;

@@ -2,10 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
+    android:orientation="vertical"
     tools:context=".ViewStreamActivity">
 
     <com.wowza.gocoder.sdk.api.player.WOWZPlayerView
@@ -16,22 +16,190 @@
         android:layout_centerInParent="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" >
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
 
     </com.wowza.gocoder.sdk.api.player.WOWZPlayerView>
 
-    <!--<ImageButton
-        android:id="@+id/imgBtn_playStop"
-        android:layout_width="wrap_content"
+    <ImageView
+        android:id="@+id/activity_viewstrean__chatstate"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="6dp"
+        android:src="@drawable/ic_speaker_notes_black_24dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/activity_viewstrean_titleset"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/activity_viewstrean_titleset"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="#00FFFFFF"
+        android:orientation="vertical"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/activity_viewstrean_recyclerview_chatlist">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.3dp"
+            android:background="#FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/activity_viewstrean_text_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:layout_weight="1"
+                android:textSize="22dp"
+                android:text="타이틀타이틀타이틀타이틀타이틀타이틀타이틀타이틀타이틀타이틀타이틀타이틀타이틀타이틀"
+                android:textColor="@color/colorWhite" />
+            <Space
+                android:layout_width="50dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/activity_viewstrean_text_host"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:layout_weight="1"
+                android:textSize="17dp"
+                android:textStyle="bold"
+                android:text="호스트"
+                android:textColor="@color/colorGreen" />
+
+
+
+            <ImageView
+                android:id="@+id/activity_viewstrean_imageview_viewer"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_people_black_24dp" />
+
+            <TextView
+                android:id="@+id/activity_viewstrean_text_viewer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/colorWhite"
+                android:textSize="17dp"
+                android:text="0" />
+
+            <Space
+                android:layout_width="50dp"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.3dp"
+            android:background="#FFFFFF" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/activity_viewstrean_chatset"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:orientation="vertical"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.3dp"
+            android:background="#FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/activity_viewstrean__edittext_chatcontent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:hint="메세지를 입력하세요."
+                android:maxLength="80"
+                android:maxLines="1"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:textColor="@color/colorWhite"
+                android:textColorHint="@color/colorWhite"
+                android:textSize="19dp" />
+
+            <TextView
+                android:id="@+id/activity_viewstrean_text_sendchat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="4dp"
+                android:clickable="true"
+                android:text="전송"
+                android:textColor="@color/colorGold"
+                android:textSize="18dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.3dp"
+            android:background="#FFFFFF" />
+
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/activity_viewstrean_recyclerview_chatlist"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:background="#4F000000"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/activity_viewstrean_chatset"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:src="@drawable/ic_stop"/>-->
+        app:layout_constraintTop_toTopOf="@+id/guideline6" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

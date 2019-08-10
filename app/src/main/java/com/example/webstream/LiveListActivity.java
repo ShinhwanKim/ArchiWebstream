@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -76,6 +77,8 @@ public class LiveListActivity extends AppCompatActivity
     TextView txtHeaderId;
     TextView txtHeaderNickname;
     ImageView imgProfile;
+
+    String getNickname;
 
     String loginedUser;
     private HttpConnection httpConn = HttpConnection.getInstance();
@@ -218,6 +221,8 @@ public class LiveListActivity extends AppCompatActivity
                 intent.putExtra("number",dataBroadcastList.getNumber());
                 intent.putExtra("host",dataBroadcastList.getHost());
                 intent.putExtra("routeStream",dataBroadcastList.getRouteStream());
+                intent.putExtra("loginedUser",loginedUser);
+                intent.putExtra("hostNickname",dataBroadcastList.getHostNickname());
                 startActivity(intent);
             }
 
@@ -299,7 +304,7 @@ public class LiveListActivity extends AppCompatActivity
                 JSONObject getUserData2 = getUserDataArray.getJSONObject(0);
                 setLog("222 : "+String.valueOf(getUserData2));
                 String getId = getUserData2.getString("id");
-                String getNickname = getUserData2.getString("nickname");
+                getNickname = getUserData2.getString("nickname");
                 String getProfile = getUserData2.getString("profileRoute");
 
                 setLog("유저아이디 : "+getId);
@@ -368,6 +373,7 @@ public class LiveListActivity extends AppCompatActivity
                         String routeThumbnail = joBroadList.getString("routeThumbnail");
                         String routeStream = joBroadList.getString("routeStream");
                         String password = joBroadList.getString("password");
+                        String hostNickname = joBroadList.getString("hostNickname");
 
                         DataList_liveList dataList = new DataList_liveList();
                         dataList.setHost(host);
@@ -377,6 +383,7 @@ public class LiveListActivity extends AppCompatActivity
                         dataList.setRouteStream(routeStream);
                         dataList.setViewer(viewer);
                         dataList.setPassword(password);
+                        dataList.setHostNickname(hostNickname);
 
                         dataList_liveLists.add(dataList);
                         adapter_liveList.notifyDataSetChanged();
@@ -475,7 +482,7 @@ public class LiveListActivity extends AppCompatActivity
         int id = menuItem.getItemId();
 
         if (id == R.id.nav_home) {
-            Intent intentHome = new Intent(LiveListActivity.this,MainActivity.class);
+            Intent intentHome = new Intent(LiveListActivity.this,HomeActivity.class);
             intentHome.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intentHome);
         } else if (id == R.id.nav_project) {
@@ -523,6 +530,17 @@ public class LiveListActivity extends AppCompatActivity
             final CheckBox checkBoxPassword = editboxview.findViewById(R.id.editbox_checkbox_password);
             final TextInputLayout textInputLayoutPassword = editboxview.findViewById(R.id.editbox_textinputlayout_password);
 
+            etextTitle.setText( loginedUser+"님의 방송입니다.");
+            etextTitle.selectAll();
+
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+
+
+            출처: https://ellordnet.tistory.com/28 [IT in MT]
+
             checkBoxPassword.setOnClickListener(new CheckBox.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -541,6 +559,9 @@ public class LiveListActivity extends AppCompatActivity
                 public void onClick(DialogInterface dialog, int which) {
                     String dataTitle = etextTitle.getText().toString();
                     String dataPassword = etextPassword.getText().toString();
+                    if(dataTitle.equals("")){
+                        dataTitle = loginedUser+"님의 방송입니다.";
+                    }
 
                     setLog("타이틀 : "+dataTitle);
                     setLog("비번 : "+dataPassword);
@@ -552,6 +573,7 @@ public class LiveListActivity extends AppCompatActivity
                     broadcastIntent.putExtra("title",dataTitle);
                     broadcastIntent.putExtra("password",dataPassword);
                     broadcastIntent.putExtra("loginedUser",loginedUser);
+                    broadcastIntent.putExtra("nickname",getNickname);
                     startActivity(broadcastIntent);
                 }
             });

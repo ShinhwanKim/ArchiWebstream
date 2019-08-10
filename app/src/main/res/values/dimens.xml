@@ -15,4 +15,7 @@
     <dimen name="myprofileActivity_change_text_size">14dp</dimen>
     <dimen name="myprofileActivity_margin">16dp</dimen>
     <dimen name="myprofileActivity_data_margin">8dp</dimen>
+
+    <dimen name="broadcastActivity_option_margin">14dp</dimen>
+    <dimen name="chatList_text_size">17dp</dimen>
 </resources>
