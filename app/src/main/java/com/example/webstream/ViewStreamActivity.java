@@ -41,6 +41,8 @@ import adapter.Adapter_chatList;
 import adapter.Adapter_chatList_viewStream;
 import dataList.DataList_chatList_broadcast;
 import dataList.DataList_chatList_viewStream;
+import okhttp3.Call;
+import okhttp3.Callback;
 
 public class ViewStreamActivity extends AppCompatActivity
 implements View.OnClickListener {
@@ -48,11 +50,15 @@ implements View.OnClickListener {
     public static final int GET_CHAT_CONTENT = 100;
     public static final int SEND_CHAT_CONTENT = 200;
 
+    public static final int PARTICIPATE_VIEWER = 300;
+    public static final int EXIT_VIEWER = 301;
+
     String TAG = "ViewStreamActivity";
     String title;
     String host;
     String routeStream;
     String loginedUser;
+    int viewer;
     int number;
     private RequestQueue queue;
     WOWZPlayerView mStreamPlayerView, mStreamPlayerView2;
@@ -79,10 +85,13 @@ implements View.OnClickListener {
 
     private RecyclerView recyChatList;
     Guideline guideline;
-
+    private Socket m_Socket;
     PrintWriter sendWriter = null;
+    BufferedReader tmpbuf;
     String chatContent;
     String hostNickname;
+
+    private HttpConnection httpConn = HttpConnection.getInstance();
 
     private Handler handler;
 
@@ -102,6 +111,7 @@ implements View.OnClickListener {
         title = intent.getStringExtra("title");
         host = intent.getStringExtra("host");
         number = intent.getIntExtra("number",0);
+        viewer = intent.getIntExtra("viewer",0);
         routeStream = intent.getStringExtra("routeStream");
         loginedUser = intent.getStringExtra("loginedUser");
         hostNickname = intent.getStringExtra("hostNickname");
@@ -136,6 +146,7 @@ implements View.OnClickListener {
 
         txtTitle.setText(title);
         txtHost.setText(hostNickname);
+        txtViewer.setText(String.valueOf(viewer));
 
 
 
@@ -229,6 +240,14 @@ implements View.OnClickListener {
                         adapter_chatListViewStream.notifyItemChanged(dataList_chatListViewStream.size());
                         recyChatList.scrollToPosition(dataList_chatListViewStream.size()-1);
                         break;
+                    case PARTICIPATE_VIEWER:
+                        txtViewer.setText(String.valueOf(viewer));
+                        //sendData("http://13.124.223.128/broadcast/updateViewer.php");
+                        break;
+                    case EXIT_VIEWER:
+                        txtViewer.setText(String.valueOf(viewer));
+                        //sendData("http://13.124.223.128/broadcast/updateViewer.php");
+                        break;
                 }
             }
         };
@@ -311,6 +330,28 @@ implements View.OnClickListener {
                 break;
         }
     }
+    private void sendData(final String url) {
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        new Thread() {
+            public void run() {
+                httpConn.requestUpdateViewer(routeStream, viewer, callback, url);
+            }
+        }.start();
+
+    }
+    private final Callback callback = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            setLog( "콜백오류:"+e.getMessage());
+        }
+        @Override
+        public void onResponse(Call call, okhttp3.Response response) throws IOException {
+            String body = response.body().string();
+            setLog("서버에서 응답한 Body:"+body);
+
+
+        }
+    };
 
     class StatusCallback implements WOWZStatusCallback {
         @Override
@@ -354,9 +395,15 @@ implements View.OnClickListener {
 
                 String receiveString;
                 String[] spliter;
+                String[] spliterParticipate;
+                String[] spliterExit;
 
                 while(true) {
                     receiveString = tmpbuf.readLine();
+
+                    if(receiveString == null){
+                        break;
+                    }
 
                     spliter = receiveString.split(">");
                     //if(spliter.length >=2 && spliter[0].equals(userId))
@@ -383,6 +430,16 @@ implements View.OnClickListener {
 
                         continue;
                     }
+                    spliterParticipate = receiveString.split("<<<");
+                    if(spliterParticipate.length == 2 && spliterParticipate[1].equals("참가")){
+                        viewer++;
+                        handler.sendEmptyMessage(PARTICIPATE_VIEWER);
+                    }
+                    spliterExit = receiveString.split("//////");
+                    if(spliterExit.length == 2 && spliterExit[1].equals("나감")){
+                        viewer--;
+                        handler.sendEmptyMessage(EXIT_VIEWER);
+                    }
                     setLog(receiveString);
                     //txtContent.setText(receiveString);
                     //System.out.println(receiveString);
@@ -398,10 +455,10 @@ implements View.OnClickListener {
 
     public class SendThread extends Thread {
 
-        private Socket m_Socket;
+        //private Socket m_Socket;
 
         public SendThread(Socket socket) {
-            this.m_Socket = socket;
+            m_Socket = socket;
         }
 
         @Override
@@ -409,7 +466,7 @@ implements View.OnClickListener {
             super.run();
 
             try {
-                final BufferedReader tmpbuf = new BufferedReader(new InputStreamReader(System.in));
+                tmpbuf = new BufferedReader(new InputStreamReader(System.in));
 
                 sendWriter = new PrintWriter(new OutputStreamWriter(m_Socket.getOutputStream(), StandardCharsets.UTF_8), true);
 
@@ -419,7 +476,7 @@ implements View.OnClickListener {
                 setLog("사용할 ID를 입력해주세요 : ");
                 System.out.println("사용할 ID를 입력해주세요 : ");
 
-                sendWriter.println("IDhighkrs12345" + loginedUser);
+                sendWriter.println("IDhighkrs12345" + loginedUser +"highkrs12345" +routeStream);
                 sendWriter.flush();
 
 
@@ -516,7 +573,7 @@ implements View.OnClickListener {
                 setLog("2");
                 //Socket c_socket = new Socket("192.168.0.1",8888);
 
-                SocketAddress addr = new InetSocketAddress("192.168.0.24",8888);
+                SocketAddress addr = new InetSocketAddress("192.168.0.221",8888);
                 try {
                     c_socket.connect(addr);
 
@@ -544,14 +601,20 @@ implements View.OnClickListener {
         connectSocket.start();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        TaskExitChat taskExitChat = new TaskExitChat();
+        taskExitChat.execute();
 
+    }
 
     class TaskSendChat extends AsyncTask<Void,Void,Void> {
 
         @Override
         protected Void doInBackground(Void... Voids) {
             setLog("doInBackground : 메세지 보내는중 ");
-            sendWriter.println(chatContent);
+            sendWriter.println(routeStream+"kkkkk"+chatContent);
             sendWriter.flush();
             return null;
         }
@@ -560,6 +623,35 @@ implements View.OnClickListener {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             setLog("onPostExecute : 메세지 다보냄 ");
+        }
+    }
+    class TaskExitChat extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+//            viewer--;
+//            sendData("http://13.124.223.128/broadcast/updateViewer.php");
+        }
+
+        @Override
+        protected Void doInBackground(Void... Voids) {
+            setLog("doInBackground : 채팅방 나가는 중 ");
+            sendWriter.println("ID"+"//////"+routeStream);
+            sendWriter.flush();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            setLog("onPostExecute : 채팅방 나감 ");
+            try {
+                sendWriter.close();
+                tmpbuf.close();
+                m_Socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

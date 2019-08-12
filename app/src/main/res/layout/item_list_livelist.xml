@@ -83,5 +83,24 @@
         app:layout_constraintStart_toStartOf="@+id/livelist_img_thumbnail"
         app:layout_constraintTop_toTopOf="@+id/livelist_img_thumbnail" />
 
+    <TextView
+        android:id="@+id/livelist_viewer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        app:layout_constraintStart_toStartOf="@+id/livelist_host"
+        app:layout_constraintTop_toBottomOf="@+id/livelist_host" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="명 시청 중"
+        app:layout_constraintBottom_toBottomOf="@+id/livelist_viewer"
+        app:layout_constraintStart_toEndOf="@+id/livelist_viewer"
+        app:layout_constraintTop_toTopOf="@+id/livelist_viewer" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

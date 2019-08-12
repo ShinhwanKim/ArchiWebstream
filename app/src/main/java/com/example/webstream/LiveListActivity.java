@@ -221,6 +221,7 @@ public class LiveListActivity extends AppCompatActivity
                 intent.putExtra("number",dataBroadcastList.getNumber());
                 intent.putExtra("host",dataBroadcastList.getHost());
                 intent.putExtra("routeStream",dataBroadcastList.getRouteStream());
+                intent.putExtra("viewer",dataBroadcastList.getViewer());
                 intent.putExtra("loginedUser",loginedUser);
                 intent.putExtra("hostNickname",dataBroadcastList.getHostNickname());
                 startActivity(intent);

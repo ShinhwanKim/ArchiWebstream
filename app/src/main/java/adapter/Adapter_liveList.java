@@ -34,14 +34,17 @@ public class Adapter_liveList extends RecyclerView.Adapter<Adapter_liveList.Cust
     public class CustomViewHolder extends RecyclerView.ViewHolder {
         protected TextView txtTitle;
         protected TextView txtHost;
+        protected TextView txtViewer;
         protected ImageView imgThumbnail;
         protected ImageView imgLock;
+
         public CustomViewHolder(@NonNull View itemView) {
             super(itemView);
             this.txtTitle = itemView.findViewById(R.id.livelist_title);
             this.txtHost = itemView.findViewById(R.id.livelist_host);
             this.imgThumbnail = itemView.findViewById(R.id.livelist_img_thumbnail);
             this.imgLock = itemView.findViewById(R.id.livelist_img_lock);
+            this.txtViewer = itemView.findViewById(R.id.livelist_viewer);
 
         }
     }
@@ -62,6 +65,7 @@ public class Adapter_liveList extends RecyclerView.Adapter<Adapter_liveList.Cust
     public void onBindViewHolder(@NonNull CustomViewHolder holder,final int position) {
         holder.txtTitle.setText("[생방송]"+mList.get(position).getTitle());
         holder.txtHost.setText(mList.get(position).getHostNickname());
+        holder.txtViewer.setText(String.valueOf(mList.get(position).getViewer()));
 
         if(!mList.get(position).getPassword().equals("")){
             holder.imgLock.setVisibility(View.VISIBLE);

@@ -16,6 +16,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -700,7 +701,7 @@ public class MyProfileActivity extends Activity
 
 
 
-
+    //서버에 프로필 이미지 업로드, 업로드된 위치를 유저 정보에 프로필 이미지 경로 Update 해주는 Async
     private  class ImageUploadTask extends AsyncTask<String, Integer, Boolean> {
         ProgressDialog progressDialog;
 
@@ -716,8 +717,10 @@ public class MyProfileActivity extends Activity
         protected Boolean doInBackground(String... params) {
 
             try {
+                //uploadImage = 이미지 업로드. params[0]은 저장을 위해 요청하는 서버 페이지,params[1]은 프로필 이미지 저장 경로
                 JSONObject jsonObject = JSONParser.uploadImage(params[0],params[1]);
                 if (jsonObject != null){
+                    //업로드된 경로를 유저 정보에 프로필 이미기 경로 Update
                     String profileRoute = "http://13.124.223.128/uploadImg/userProfileImg/"+jsonObject.getString("result");
                     String url = "http://13.124.223.128/change/changeAlbumProfile.php";
                     sendDataDouble(loginedUser, profileRoute, url, CHANGE_ALBUM_PROFILE );
@@ -736,7 +739,9 @@ public class MyProfileActivity extends Activity
 
         }
     }
+
     public static class JSONParser {
+        //okHttp로 이미지 서버에 업로드
         public static JSONObject uploadImage(String imageUploadUrl, String sourceImageFile) {
 
             try {
@@ -787,11 +792,13 @@ public class MyProfileActivity extends Activity
     private void getPictureForPhoto(){
         Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
 
-        SaveBitmapToFileCache(bitmap, currentPhotoPath, "ttt");
 
+
+        //Exif = EXchangable Image File format
         ExifInterface exif = null;
         try{
-            exif = new ExifInterface(currentPhotoPath);
+            //사진의 정보 가져오기기
+           exif = new ExifInterface(currentPhotoPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -801,18 +808,28 @@ public class MyProfileActivity extends Activity
         if(exif != null){
             exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
             exifDegree = exifOrientationToDegrees(exifOrientation);
+
+            Matrix rotateMatrix = new Matrix();
+            rotateMatrix.postRotate(90);
+
+            bitmap = Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),rotateMatrix,false);
         }else {
             exifDegree = 0;
         }
+        SaveBitmapToFileCache(bitmap, currentPhotoPath, "ttt");
+
+        //글라이드로 프로필 이미지 변경 해주기
         Glide.with(MyProfileActivity.this)
                 .load(bitmap)
                 .apply(new RequestOptions().circleCrop())
                 .into(imgProfile);
 
+        //변경된 프로필 이미지 서버에 업로드
         String ImageUploadURL = "http://13.124.223.128/uploadImg/userProfileImg/uploadUserProfile.php";
         new ImageUploadTask().execute(ImageUploadURL, currentPhotoPath);
 
     }
+
     private int exifOrientationToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return 90;
@@ -823,6 +840,7 @@ public class MyProfileActivity extends Activity
         } return 0;
     }
 
+    //비트맵 압축 매서드
     public static void SaveBitmapToFileCache(Bitmap bitmap, String strFilePath, String filename) {
 
         File file = new File(strFilePath);

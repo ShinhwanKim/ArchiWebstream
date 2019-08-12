@@ -52,6 +52,10 @@ import com.wowza.gocoder.sdk.api.status.WOWZState;
 import com.wowza.gocoder.sdk.api.status.WOWZStatus;
 import com.wowza.gocoder.sdk.api.status.WOWZStatusCallback;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -67,6 +71,8 @@ import java.util.Map;
 
 import adapter.Adapter_chatList;
 import dataList.DataList_chatList_broadcast;
+import okhttp3.Call;
+import okhttp3.Callback;
 
 /*
 이 액티비티는 방송을 와우자 스트리밍 엔진에 송출하는 액티비티이다.
@@ -89,7 +95,12 @@ public class BroadcastActivity extends AppCompatActivity
     public static final int GET_CHAT_CONTENT = 100;
     public static final int SEND_CHAT_CONTENT = 200;
 
+    public static final int PARTICIPATE_VIEWER = 300;
+    public static final int EXIT_VIEWER = 301;
 
+
+    private Socket m_Socket;
+    BufferedReader tmpbuf;
 
     private String ORIENTATION_LANDSCAPE = "가로";
     private String ORIENTATION_PORTRAIT = "세로";
@@ -124,6 +135,7 @@ public class BroadcastActivity extends AppCompatActivity
     };
 
     private RequestQueue queue;
+    private HttpConnection httpConn = HttpConnection.getInstance();
 
     WOWZCameraView mWZCameraView = null;
 
@@ -152,6 +164,8 @@ public class BroadcastActivity extends AppCompatActivity
 
     ImageView imgViewer ;
     TextView txtViewer ;
+    String strViewer;
+    int intViewer =-1;
 
     private boolean blnOptionState;
     private boolean blnChatState;
@@ -284,8 +298,7 @@ public class BroadcastActivity extends AppCompatActivity
         blnOptionState = true;
         blnChatState = false;
 
-        //채틸 소켓 연결??
-        SocketConnect();
+
 
         handler = new Handler(){
             @Override
@@ -303,6 +316,14 @@ public class BroadcastActivity extends AppCompatActivity
                         //리사이클러뷰를 통째로 재 배열 하니 글자색이 뒤죽박죽되는 에러 발생
                         adapter_chatList.notifyItemChanged(dataList_chatListBroadcasts.size());
                         recyChatList.scrollToPosition(dataList_chatListBroadcasts.size()-1);
+                        break;
+                    case PARTICIPATE_VIEWER:
+                        txtViewer.setText(String.valueOf(intViewer));
+                        sendData("http://13.124.223.128/broadcast/updateViewer.php");
+                        break;
+                    case EXIT_VIEWER:
+                        txtViewer.setText(String.valueOf(intViewer));
+                        sendData("http://13.124.223.128/broadcast/updateViewer.php");
                         break;
                 }
             }
@@ -383,6 +404,9 @@ public class BroadcastActivity extends AppCompatActivity
                 // initiate a broadcast streaming session
                 WOWZStreamingError configValidationError = goCoderBroadcastConfig.validateForBroadcast();
 
+                //채팅 소켓 연결
+
+
                 if (configValidationError != null) {
                     Toast.makeText(this, configValidationError.getErrorDescription(), Toast.LENGTH_LONG).show();
                 } else if (goCoderBroadcaster.getStatus().isRunning()) {
@@ -407,6 +431,16 @@ public class BroadcastActivity extends AppCompatActivity
 
                             btnBroadcast.setImageResource(R.drawable.ic_start);
 
+                            try {
+                                sendWriter.close();
+                                tmpbuf.close();
+                                m_Socket.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+
+
                         }
                     });
                     alertDialogProfile.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -428,6 +462,7 @@ public class BroadcastActivity extends AppCompatActivity
                     //----------------------------현재 방송중이 아니라면, 방송 시작.--------------------------------------
                     // Start streaming
                     goCoderBroadcaster.startBroadcast(goCoderBroadcastConfig, this);
+                    SocketConnect();
                     setLog("방송시작");
 
 
@@ -689,6 +724,28 @@ public class BroadcastActivity extends AppCompatActivity
         }
 
     }
+    private void sendData(final String url) {
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        new Thread() {
+            public void run() {
+                httpConn.requestUpdateViewer(streamRoute, intViewer, callback, url);
+            }
+        }.start();
+
+    }
+    private final Callback callback = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            setLog( "콜백오류:"+e.getMessage());
+        }
+        @Override
+        public void onResponse(Call call, okhttp3.Response response) throws IOException {
+            String body = response.body().string();
+            setLog("서버에서 응답한 Body:"+body);
+
+
+        }
+    };
 
     @Override
     protected void onDestroy() {
@@ -697,6 +754,7 @@ public class BroadcastActivity extends AppCompatActivity
         goCoderCameraView.stopPreview();
     }
 
+    //------------------------------서버 소켓에서 메세지를 받아와 채팅창에 출력해주는 쓰레드----------------------------
     public class ReceiveThread extends Thread{
         private Socket m_socket;
 
@@ -713,6 +771,9 @@ public class BroadcastActivity extends AppCompatActivity
 
                 String receiveString;
                 String[] spliter;
+                String[] spliterParticipate;
+                String[] spliterExit;
+
 
                 while(true) {
                     receiveString = tmpbuf.readLine();
@@ -720,8 +781,8 @@ public class BroadcastActivity extends AppCompatActivity
                     spliter = receiveString.split(">");
                     //if(spliter.length >=2 && spliter[0].equals(userId))
                     setLog("현재 내 닉네임 : "+hostNickname);
+                    //채팅과 관련된 메세지들, 그리고 내가 아닌 다른 클라이언트들이 보낸 메세지들을 받았을 경우만 출력.
                     if(spliter.length >=2 && !spliter[0].equals(hostNickname)) {
-
 
                         String nick = spliter[0];
                         String content = spliter[1];
@@ -736,11 +797,17 @@ public class BroadcastActivity extends AppCompatActivity
                         dataList_chatListBroadcasts.add(dataChat);
                         handler.sendEmptyMessage(GET_CHAT_CONTENT);
 
-
-
-
-
                         continue;
+                    }
+                    spliterParticipate = receiveString.split("<<<");
+                    if(spliterParticipate.length == 2 && spliterParticipate[1].equals("참가")){
+                        intViewer++;
+                        handler.sendEmptyMessage(PARTICIPATE_VIEWER);
+                    }
+                    spliterExit = receiveString.split("//////");
+                    if(spliterExit.length == 2 && spliterExit[1].equals("나감")){
+                        intViewer--;
+                        handler.sendEmptyMessage(EXIT_VIEWER);
                     }
                     setLog(receiveString);
                     //txtContent.setText(receiveString);
@@ -754,13 +821,13 @@ public class BroadcastActivity extends AppCompatActivity
             m_socket = _socket;
         }
     }
-
+    //------------------------------서버 소켓에 메세지를 보내주는 쓰레드----------------------------
     public class SendThread extends Thread {
 
-        private Socket m_Socket;
+
 
         public SendThread(Socket socket) {
-            this.m_Socket = socket;
+            m_Socket = socket;
         }
 
         @Override
@@ -768,60 +835,45 @@ public class BroadcastActivity extends AppCompatActivity
             super.run();
 
             try {
-                final BufferedReader tmpbuf = new BufferedReader(new InputStreamReader(System.in));
-
+                tmpbuf = new BufferedReader(new InputStreamReader(System.in));
                 sendWriter = new PrintWriter(new OutputStreamWriter(m_Socket.getOutputStream(), StandardCharsets.UTF_8), true);
 
-                final String sendString;
 
+                //구분자
+                String separator = "highkrs12345";
 
-                setLog("사용할 ID를 입력해주세요 : ");
-                System.out.println("사용할 ID를 입력해주세요 : ");
                 userId = "sinhwan02112멀";
 
-                sendWriter.println("IDhighkrs12345" + hostNickname);
+                //구분자를 기분으로 스트리밍을 하는 사람의 닉네임, 방이름을 서버 소켓에 보낸다.
+                sendWriter.println("ID"+ separator + hostNickname + separator +streamRoute);
+                //sendWriter.println("IDhighkrs12345" + hostNickname +"highkrs12345" +"a");
                 sendWriter.flush();
 
 
-
+                //채팅 메세지 전송 버튼
                 txtSendContent.setOnClickListener(new View.OnClickListener() {
-
                     @Override
                     public void onClick(View view) {
                         setLog("전송 버튼 클릭");
+                        //스트리밍 방송 중이 아닐 때는 작동 x
                         if(!goCoderBroadcaster.getStatus().isRunning()){
                             Toast.makeText(BroadcastActivity.this, "채팅 기능은 방송 중에만 이용할 수 있습니다.", Toast.LENGTH_SHORT).show();
                         }else {
                             chatContent = etxtChatContent.getText().toString();
                             if(chatContent.equals("")){
 
-                            }else {
+                            }
+                            else {
                                 DataList_chatList_broadcast dataChat = new DataList_chatList_broadcast();
                                 dataChat.setNickname(hostNickname);
                                 dataChat.setContent(chatContent);
                                 dataList_chatListBroadcasts.add(dataChat);
+                                //내 채팅창에 먼저 채팅 메세지 띄우기
                                 handler.sendEmptyMessage(SEND_CHAT_CONTENT);
-
+                                //서버 소켓에 채팅 내용 보내기 AsyncTask 실행
                                 TaskSendChat taskSendChat = new TaskSendChat();
                                 taskSendChat.execute();
-//                                sendWriter.println(chatContent);
-//                                sendWriter.flush();
 
-//                                Thread sendThread = new Thread() {
-//                                    @Override
-//                                    public void run() {
-//                                        super.run();
-//                                        sendWriter.println(chatContent);
-////                                try {
-////                                    //sendWriter.println(contentChat.getBytes("UTF-8"));
-////
-////                                } catch (UnsupportedEncodingException e) {
-////                                    e.printStackTrace();
-////                                }
-//                                        sendWriter.flush();
-//                                    }
-//                                };
-//                                sendThread.start();
                                 etxtChatContent.setText("");
                             }
                         }
@@ -841,7 +893,7 @@ public class BroadcastActivity extends AppCompatActivity
 //
 //                    }
 //                });
-
+//
 //                while(true) {
 //                    sendString = tmpbuf.readLine();
 //                    btnSend.setOnClickListener(new View.OnClickListener() {
@@ -857,7 +909,7 @@ public class BroadcastActivity extends AppCompatActivity
 //                    sendWriter.println(sendString);
 //                    sendWriter.flush();
 //                }
-
+//
 //                sendWriter.close();
 //                tmpbuf.close();
 //                m_Socket.close();
@@ -871,6 +923,8 @@ public class BroadcastActivity extends AppCompatActivity
             m_Socket = _socket;
         }
     }
+
+    //------------------------------서버 소켓에 접속----------------------------
     public void SocketConnect(){
         final Socket c_socket = new Socket();
         Thread connectSocket = new Thread(){
@@ -880,25 +934,28 @@ public class BroadcastActivity extends AppCompatActivity
                 setLog("2");
                 //Socket c_socket = new Socket("192.168.0.1",8888);
 
-                SocketAddress addr = new InetSocketAddress("192.168.0.24",8888);
+                SocketAddress addr = new InetSocketAddress("192.168.0.221",8888);
                 try {
                     c_socket.connect(addr);
 
-                    setLog("3");
-                    ReceiveThread rec_thread = new ReceiveThread(c_socket);
-                    setLog("4");
-                    //rec_thread.setSocket(c_socket);
-                    setLog("5");
+                    //setLog("3");
 
+                    //서버로부터 메세지를 받는 쓰레드
+                    ReceiveThread rec_thread = new ReceiveThread(c_socket);
+                    //setLog("4");
+                    //rec_thread.setSocket(c_socket);
+                    //setLog("5");
+
+                    //서버에게 메세지를 보내는 쓰레드
                     SendThread send_thread = new SendThread(c_socket);
-                    setLog("6");
+                    //setLog("6");
                     //send_thread.setSocket(c_socket);
-                    setLog("7");
+                    //setLog("7");
 
                     send_thread.start();
-                    setLog("8");
+                    //setLog("8");
                     rec_thread.start();
-                    setLog("9");
+                    //setLog("9");
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -907,10 +964,10 @@ public class BroadcastActivity extends AppCompatActivity
         };
         connectSocket.start();
     }
-
+    //------------------------------취소 버튼----------------------------
     @Override
     public void onBackPressed() {
-
+        //방송 중일 때는 취소 버튼이 무효화됨.
         if(goCoderBroadcaster.getStatus().isRunning()){
             Toast.makeText(this, "지금은 방송 중입니다. 방송을 먼저 종료해주세요. ", Toast.LENGTH_SHORT).show();
         }else{
@@ -919,12 +976,15 @@ public class BroadcastActivity extends AppCompatActivity
 
     }
 
+    //------------------------------서버 소켓에 메세지를 보내는 Asyntask----------------------------
     class TaskSendChat extends AsyncTask<Void,Void,Void>{
 
         @Override
         protected Void doInBackground(Void... Voids) {
             setLog("doInBackground : 메세지 보내는중 ");
-            sendWriter.println(chatContent);
+            //구분자. 서버에서, 메세지를 보낸 클라이언트가 속해 있는 방이름과 메세지 내용을 구분하기 위한용;
+            String separator = "kkkkk";
+            sendWriter.println(streamRoute+separator+chatContent);
             sendWriter.flush();
             return null;
         }
