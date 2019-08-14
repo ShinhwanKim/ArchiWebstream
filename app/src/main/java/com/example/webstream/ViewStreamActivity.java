@@ -357,8 +357,8 @@ implements View.OnClickListener {
         @Override
         public void onWZStatus(WOWZStatus wzStatus) {
             setLog("허허허 : "+wzStatus);
-            setLog("프레임 레이트:"+ mStreamPlayerView.getStreamConfig().getVideoFramerate());
-            setLog("프레임 사이즈:"+mStreamPlayerView.getStreamConfig().getVideoFrameSize());
+            /*setLog("프레임 레이트:"+ mStreamPlayerView.getStreamConfig().getVideoFramerate());
+            setLog("프레임 사이즈:"+mStreamPlayerView.getStreamConfig().getVideoFrameSize());*/
             if(wzStatus.isIdle()){
                 Handler mHandler = new Handler(Looper.getMainLooper());
                 mHandler.postDelayed(new Runnable() {

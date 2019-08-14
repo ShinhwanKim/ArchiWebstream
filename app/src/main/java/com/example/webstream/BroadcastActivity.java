@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -98,6 +99,8 @@ public class BroadcastActivity extends AppCompatActivity
     public static final int PARTICIPATE_VIEWER = 300;
     public static final int EXIT_VIEWER = 301;
 
+    public static final int UPDATE_VIEWER = 400;
+    public static final int CREATE_RECORDING_CHAT_TABLE = 401;
 
     private Socket m_Socket;
     BufferedReader tmpbuf;
@@ -319,11 +322,11 @@ public class BroadcastActivity extends AppCompatActivity
                         break;
                     case PARTICIPATE_VIEWER:
                         txtViewer.setText(String.valueOf(intViewer));
-                        sendData("http://13.124.223.128/broadcast/updateViewer.php");
+                        sendData("http://13.124.223.128/broadcast/updateViewer.php",UPDATE_VIEWER);
                         break;
                     case EXIT_VIEWER:
                         txtViewer.setText(String.valueOf(intViewer));
-                        sendData("http://13.124.223.128/broadcast/updateViewer.php");
+                        sendData("http://13.124.223.128/broadcast/updateViewer.php",UPDATE_VIEWER);
                         break;
                 }
             }
@@ -472,6 +475,9 @@ public class BroadcastActivity extends AppCompatActivity
 
                     CommunicateServer("http://15.164.121.33/php/recording/startRecord.php",FLAG_START_RECORD);
 
+                    sendData("http://13.124.223.128/recording/createRecordChatList.php",CREATE_RECORDING_CHAT_TABLE);
+
+
                     btnBroadcast.setImageResource(R.drawable.ic_stop);
 
                 }
@@ -536,6 +542,8 @@ public class BroadcastActivity extends AppCompatActivity
 
 
     }
+
+
 
     @Override
     public void onWZStatus(final WOWZStatus goCoderStatus) {
@@ -678,7 +686,7 @@ public class BroadcastActivity extends AppCompatActivity
                     params.put("hostNickname", hostNickname);
                     setLog("비밀번호 : "+password);
                 }else if(flag == FLAG_INSERT_RECORD){
-                    params.put("title", streamRoute);
+                    params.put("streamRoute", streamRoute);
                     params.put("userRecordedCount", String.valueOf(userRecordedCount));
                     params.put("routeThumbnail", thumbnailRoute);
                     setLog("썸네일 경로1 : "+thumbnailRoute);
@@ -724,14 +732,36 @@ public class BroadcastActivity extends AppCompatActivity
         }
 
     }
-    private void sendData(final String url) {
+    private void sendData(final String url,int flag) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        switch (flag){
+            case UPDATE_VIEWER:
+                new Thread() {
+                    public void run() {
+                        httpConn.requestUpdateViewer(streamRoute, intViewer, callback, url);
+                    }
+                }.start();
+                break;
+            case CREATE_RECORDING_CHAT_TABLE:
+                new Thread() {
+                    public void run() {
+                        long startTime = SystemClock.elapsedRealtime();
+                        httpConn.requestCreateRecordChatTable(streamRoute, startTime, callback, url);
+                    }
+                }.start();
+                break;
+        }
+
+
+    }
+    private void SendToServerChat(final String nickname,final String content){
         new Thread() {
             public void run() {
-                httpConn.requestUpdateViewer(streamRoute, intViewer, callback, url);
+                long startTime = SystemClock.elapsedRealtime();
+                String url = "http://13.124.223.128/recording/saveChatList.php";
+                httpConn.requestSaveChatContent(streamRoute, nickname, content,startTime, callback, url);
             }
         }.start();
-
     }
     private final Callback callback = new Callback() {
         @Override
@@ -791,10 +821,14 @@ public class BroadcastActivity extends AppCompatActivity
                         setLog("현재 내 닉네임 : "+hostNickname);
                         setLog(receiveString);
 
+                        //채팅 내용 추가 - 타인이 보낸 메세지
                         DataList_chatList_broadcast dataChat = new DataList_chatList_broadcast();
                         dataChat.setNickname(nick);
                         dataChat.setContent(content);
                         dataList_chatListBroadcasts.add(dataChat);
+
+                        SendToServerChat(nick,content);
+
                         handler.sendEmptyMessage(GET_CHAT_CONTENT);
 
                         continue;
@@ -863,12 +897,16 @@ public class BroadcastActivity extends AppCompatActivity
                             if(chatContent.equals("")){
 
                             }
+                            //채팅 내용 추가 - 내가 보낸 메세지
                             else {
                                 DataList_chatList_broadcast dataChat = new DataList_chatList_broadcast();
                                 dataChat.setNickname(hostNickname);
                                 dataChat.setContent(chatContent);
                                 dataList_chatListBroadcasts.add(dataChat);
                                 //내 채팅창에 먼저 채팅 메세지 띄우기
+                                SendToServerChat(hostNickname,chatContent);
+
+
                                 handler.sendEmptyMessage(SEND_CHAT_CONTENT);
                                 //서버 소켓에 채팅 내용 보내기 AsyncTask 실행
                                 TaskSendChat taskSendChat = new TaskSendChat();

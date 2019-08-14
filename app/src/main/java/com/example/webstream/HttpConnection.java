@@ -157,5 +157,40 @@ public class HttpConnection {
                 .build();
         client.newCall(request).enqueue(callback);
     }
+    public void requestCreateRecordChatTable(String routeStream,long startTime,Callback callback,String url){
+        RequestBody body = new FormBody.Builder()
+                .add("routeStream", routeStream)
+                .add("startTime", String.valueOf(startTime))
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestSaveChatContent(String routeStream,String nickname, String content,long startTime,Callback callback,String url){
+        RequestBody body = new FormBody.Builder()
+                .add("routeStream", routeStream)
+                .add("nickname", nickname)
+                .add("content", content)
+                .add("startTime", String.valueOf(startTime))
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+
+    public void requestGetChatRecorded(String routeStream,Callback callback,String url){
+        RequestBody body = new FormBody.Builder()
+                .add("routeStream", routeStream)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
 
 }
