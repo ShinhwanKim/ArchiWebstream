@@ -3,6 +3,10 @@ package dataList;
 public class DataList_recordedList {
 
     String host;
+
+
+
+    String hostNickname;
     String title;
     String routeVideo;
     String routeThumbnail;
@@ -14,6 +18,14 @@ public class DataList_recordedList {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public String getHostNickname() {
+        return hostNickname;
+    }
+
+    public void setHostNickname(String hostNickname) {
+        this.hostNickname = hostNickname;
     }
 
     public String getTitle() {

@@ -9,11 +9,11 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/item_list_chat_id"
+        android:id="@+id/item_list_chat_host_id"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="6dp"
-        android:textColor="@color/colorGrayChat"
+        android:textColor="#3ED641"
         android:maxLines="3"
         android:text="TextView"
         android:textSize="@dimen/chatList_text_size"
@@ -22,25 +22,25 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/item_list_chat_split"
+        android:id="@+id/item_list_chat_host_split"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=":"
         android:textSize="@dimen/chatList_text_size"
-        android:textColor="@color/colorGrayChat"
-        app:layout_constraintBottom_toBottomOf="@+id/item_list_chat_id"
+        android:textColor="#3ED641"
+        app:layout_constraintBottom_toBottomOf="@+id/item_list_chat_host_id"
         app:layout_constraintEnd_toStartOf="@+id/guideline5"
-        app:layout_constraintTop_toTopOf="@+id/item_list_chat_id" />
+        app:layout_constraintTop_toTopOf="@+id/item_list_chat_host_id" />
 
     <TextView
-        android:id="@+id/item_list_chat_content"
+        android:id="@+id/item_list_chat_host_content"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:maxLength="80"
         android:textSize="@dimen/chatList_text_size"
         android:text="내용"
-        android:textColor="@color/colorWhite"
+        android:textColor="#3ED641"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

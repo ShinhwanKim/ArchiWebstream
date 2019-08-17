@@ -41,6 +41,13 @@
         app:layout_constraintBottom_toTopOf="@+id/activity_view_recorded_recyclerview_chatlist"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <MediaController
+        android:id="@+id/activity_view_recorded_controller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/activity_view_recorded_recyclerview_chatlist"></MediaController>
+
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline7"
         android:layout_width="wrap_content"

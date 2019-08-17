@@ -90,6 +90,7 @@ implements View.OnClickListener {
     BufferedReader tmpbuf;
     String chatContent;
     String hostNickname;
+    int position;
 
     private HttpConnection httpConn = HttpConnection.getInstance();
 
@@ -115,6 +116,7 @@ implements View.OnClickListener {
         routeStream = intent.getStringExtra("routeStream");
         loginedUser = intent.getStringExtra("loginedUser");
         hostNickname = intent.getStringExtra("hostNickname");
+        position = intent.getIntExtra("position",0);
 
         /*setLog(title);
         setLog(host);
@@ -282,6 +284,8 @@ implements View.OnClickListener {
     protected void onStop() {
         super.onStop();
         mStreamPlayerView.clear();
+        setLog("onStop");
+
     }
 
     @Override
@@ -573,7 +577,7 @@ implements View.OnClickListener {
                 setLog("2");
                 //Socket c_socket = new Socket("192.168.0.1",8888);
 
-                SocketAddress addr = new InetSocketAddress("192.168.0.221",8888);
+                SocketAddress addr = new InetSocketAddress("192.168.0.24",8888);
                 try {
                     c_socket.connect(addr);
 
@@ -604,9 +608,21 @@ implements View.OnClickListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        setLog("onDestroy");
         TaskExitChat taskExitChat = new TaskExitChat();
         taskExitChat.execute();
 
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        setLog("onPause");
+        setLog("AAA 나가기전 : "+LiveListActivity.finishView );
+        LiveListActivity.finishView = true;
+        LiveListActivity.finishPosition = position;
+        setLog("AAA 나가기후 : "+LiveListActivity.finishView );
     }
 
     class TaskSendChat extends AsyncTask<Void,Void,Void> {

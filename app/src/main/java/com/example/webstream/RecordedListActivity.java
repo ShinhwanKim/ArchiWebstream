@@ -73,14 +73,16 @@ public class RecordedListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view, int position) {
                 DataList_recordedList dataList_recordedList = mArrayList.get(position);
+                setLog("인텐트로 레코드뷰에 넘기는 데이터"+dataList_recordedList.getHostNickname());
 
                 Intent intent = new Intent(getApplicationContext(), ViewRecordedActivity.class);
                 intent.putExtra("host",dataList_recordedList.getHost());
+                intent.putExtra("hostNickname",dataList_recordedList.getHostNickname());
                 intent.putExtra("title",dataList_recordedList.getTitle());
                 intent.putExtra("RecordNumber",dataList_recordedList.getRecordNumber());
                 intent.putExtra("routeVideo",dataList_recordedList.getRouteVideo());
                 intent.putExtra("routeThumbnail",dataList_recordedList.getRouteThumbnail());
-                startActivity(intent);
+                //startActivity(intent);
 
             }
 
@@ -131,12 +133,14 @@ public class RecordedListActivity extends AppCompatActivity {
                         JSONObject joBroadList = jaBroadcastList.getJSONObject(i);
                         String host = joBroadList.getString("host");
                         String title = joBroadList.getString("title");
+                        String hostNickname = joBroadList.getString("hostNickname");
                         int recordNumber = Integer.parseInt(joBroadList.getString("RecordNumber"));
                         String routeVideo = joBroadList.getString("routeVideo");
                         String routeThumbnail = joBroadList.getString("routeThumbnail");
 
                         DataList_recordedList dataList = new DataList_recordedList();
                         dataList.setHost(host);
+                        dataList.setHostNickname(hostNickname);
                         dataList.setTitle(title);
                         dataList.setRecordNumber(recordNumber);
                         dataList.setRouteVideo(routeVideo);

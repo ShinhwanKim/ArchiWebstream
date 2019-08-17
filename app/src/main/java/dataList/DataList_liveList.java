@@ -11,6 +11,8 @@ public class DataList_liveList {
     private String password;
     private String hostNickname;
 
+
+
     public String getHostNickname() {
         return hostNickname;
     }

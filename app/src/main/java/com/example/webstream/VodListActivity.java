@@ -183,7 +183,20 @@ public class VodListActivity extends AppCompatActivity
         };
 
         RecyclerView recyVodList = findViewById(R.id.activity_vodlist_recyclerview_broadcastList);
-        recyVodList.setLayoutManager(new LinearLayoutManager(VodListActivity.this));
+        recyVodList.setLayoutManager(new LinearLayoutManager(VodListActivity.this)
+//        {
+//            @Override
+//            public boolean canScrollVertically() {
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean canScrollHorizontally() {
+//                return false;
+//            }
+//        }
+        );
+
         dataList_vodList = new ArrayList<>();
 
         adapter_vodList = new Adapter_recordList(VodListActivity.this,dataList_vodList);
@@ -209,10 +222,12 @@ public class VodListActivity extends AppCompatActivity
         recyVodList.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recyVodList, new recyclerClickListener() {
             @Override
             public void onClick(View view, int position) {
+                setLog("클릭함");
                 DataList_recordedList dataList_recordedList = dataList_vodList.get(position);
 
                 Intent intent = new Intent(getApplicationContext(), ViewRecordedActivity.class);
                 intent.putExtra("host",dataList_recordedList.getHost());
+                intent.putExtra("hostNickname",dataList_recordedList.getHostNickname());
                 intent.putExtra("title",dataList_recordedList.getTitle());
                 intent.putExtra("RecordNumber",dataList_recordedList.getRecordNumber());
                 intent.putExtra("routeVideo",dataList_recordedList.getRouteVideo());
@@ -538,6 +553,7 @@ public class VodListActivity extends AppCompatActivity
                         setLog("어디보자 : "+jaBroadcastList.getJSONObject(i));
                         JSONObject joBroadList = jaBroadcastList.getJSONObject(i);
                         String host = joBroadList.getString("host");
+                        String hostNickname = joBroadList.getString("hostNickname");
                         String title = joBroadList.getString("title");
                         int recordNumber = Integer.parseInt(joBroadList.getString("RecordNumber"));
                         String routeVideo = joBroadList.getString("routeVideo");
@@ -545,13 +561,15 @@ public class VodListActivity extends AppCompatActivity
 
                         DataList_recordedList dataList = new DataList_recordedList();
                         dataList.setHost(host);
+                        dataList.setHostNickname(hostNickname);
                         dataList.setTitle(title);
                         dataList.setRecordNumber(recordNumber);
                         dataList.setRouteVideo(routeVideo);
                         dataList.setRouteThumbnail(routeThumbnail);
                         setLog("데이터 접속중 6 ");
                         dataList_vodList.add(dataList);
-                        adapter_vodList.notifyDataSetChanged();
+                        //adapter_vodList.notifyDataSetChanged();
+                        adapter_vodList.notifyItemChanged(dataList_vodList.size());
                     }
 
 

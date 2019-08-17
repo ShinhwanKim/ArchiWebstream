@@ -63,6 +63,9 @@ public class LiveListActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "LiveListActivity";
+    public static boolean finishView;
+    public static int finishPosition;
+
     public void setLog(String content){Log.e(TAG,content);}
 
     public static final int CHANGE_USERID = 100;
@@ -193,6 +196,8 @@ public class LiveListActivity extends AppCompatActivity
         adapter_liveList = new Adapter_liveList(LiveListActivity.this,dataList_liveLists);
         recyLiveList.setAdapter(adapter_liveList);
 
+        finishView = false;
+
         swipeRefreshLayout = findViewById(R.id.activity_livelist_refresh);
         //------------------------------리사이클러뷰 새로고침 이벤트----------------------------
 
@@ -224,6 +229,7 @@ public class LiveListActivity extends AppCompatActivity
                 intent.putExtra("viewer",dataBroadcastList.getViewer());
                 intent.putExtra("loginedUser",loginedUser);
                 intent.putExtra("hostNickname",dataBroadcastList.getHostNickname());
+                intent.putExtra("position",position);
                 startActivity(intent);
             }
 
@@ -238,7 +244,7 @@ public class LiveListActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-
+        setLog("onResume");
         //바텀 네비게이션 뷰 선택
         bottomNavigationView.setSelectedItemId(R.id.bottom_navigation_live);
 
@@ -375,7 +381,16 @@ public class LiveListActivity extends AppCompatActivity
                         String routeStream = joBroadList.getString("routeStream");
                         String password = joBroadList.getString("password");
                         String hostNickname = joBroadList.getString("hostNickname");
+                        setLog("AAA가져온 시청자수 : "+viewer);
+                        setLog("AAAfinishView : "+finishView);
+                        if(finishPosition  == i){
+                            if(finishView == true){
+                                viewer -- ;
+                                finishView = false;
+                            }
+                        }
 
+                        setLog("AAA넣기전 시청자수 : "+viewer);
                         DataList_liveList dataList = new DataList_liveList();
                         dataList.setHost(host);
                         dataList.setTitle(title);
@@ -539,8 +554,6 @@ public class LiveListActivity extends AppCompatActivity
             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
 
-
-            출처: https://ellordnet.tistory.com/28 [IT in MT]
 
             checkBoxPassword.setOnClickListener(new CheckBox.OnClickListener() {
                 @Override

@@ -5,6 +5,9 @@ public class DataList_chatList_recorded {
     String content;
     int chatTime;
 
+    public static final int HOST =0;
+    public static final int VIEWER =1;
+
     public String getNickname() {
         return nickname;
     }

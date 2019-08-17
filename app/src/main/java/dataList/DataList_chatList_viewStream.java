@@ -5,6 +5,10 @@ public class DataList_chatList_viewStream {
     private String content;
     private String nickname;
 
+    public static final int HOST =0;
+    public static final int VIEWER =1;
+    public static final int ME =2;
+
     public String getNickname() {
         return nickname;
     }

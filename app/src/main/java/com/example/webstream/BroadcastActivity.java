@@ -686,12 +686,13 @@ public class BroadcastActivity extends AppCompatActivity
                     params.put("hostNickname", hostNickname);
                     setLog("비밀번호 : "+password);
                 }else if(flag == FLAG_INSERT_RECORD){
+                    params.put("hostNickname", hostNickname);
                     params.put("streamRoute", streamRoute);
                     params.put("userRecordedCount", String.valueOf(userRecordedCount));
                     params.put("routeThumbnail", thumbnailRoute);
                     setLog("썸네일 경로1 : "+thumbnailRoute);
                 }else if(flag == FLAG_SAVE_THUMBNAIL){
-                    params.put("title", streamRoute);
+                    params.put("streamRoute", streamRoute);
                     params.put("orientation", ORIENTATION_STATE);
                 }
                 return params;
@@ -972,7 +973,7 @@ public class BroadcastActivity extends AppCompatActivity
                 setLog("2");
                 //Socket c_socket = new Socket("192.168.0.1",8888);
 
-                SocketAddress addr = new InetSocketAddress("192.168.0.221",8888);
+                SocketAddress addr = new InetSocketAddress("192.168.0.24",8888);
                 try {
                     c_socket.connect(addr);
 
