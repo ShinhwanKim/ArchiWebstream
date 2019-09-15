@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.MediaController;
@@ -35,7 +36,7 @@ implements View.OnClickListener {
 
     String TAG = "ViewRecordedActivity";
     public void setLog(String content){
-        android.util.Log.v(TAG,content);
+        Log.e(TAG,content);
     }
 
     //Flag모음
@@ -82,7 +83,7 @@ implements View.OnClickListener {
         //routeStreamName 알아내기 위한 split 작업
         //setLog("루트 비디오 : "+routeVideo);
         String[] split ;
-        split = routeVideo.split("http://15.164.121.33/");
+        split = routeVideo.split("http://13.209.207.197/");
         String[] split2;
         split2 = split[1].split(".mp4");
         routeVideoName = split2[0];
@@ -103,12 +104,14 @@ implements View.OnClickListener {
         //controller.findViewById(R.id.activity_view_recorded_controller);
         videoView.setMediaController(controller);
         videoView.setVideoPath(routeVideo);
-        controller.setOnClickListener(new View.OnClickListener() {
+        setLog("영상 포지션 : "+videoView.getCurrentPosition());
+         
+        /*controller.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 setLog("영상 포지션 : "+videoView.getCurrentPosition());
             }
-        });
+        });*/
 
 
 
@@ -293,20 +296,27 @@ implements View.OnClickListener {
     Thread chattingThread = new Thread(){
         @Override
         public void run() {
+            setLog("쓰레드 시작");
+            setLog("쓰레드 시작 1: "+dataList_chatList_recordeds_getter.size());
             for(int i =1;i<dataList_chatList_recordeds_getter.size();i++){
-
+                setLog("쓰레드 시작 2");
                 DataList_chatList_recorded dataGetter = dataList_chatList_recordeds_getter.get(i);
                 DataList_chatList_recorded dataGetterPre = dataList_chatList_recordeds_getter.get(i-1);
                 try {
                     //이전 채팅내용 출력된 시간과의 차를 Sleep인자값으로 주어 실시간 방송과 동일하게 출력.
                     Thread.sleep(dataGetter.getChatTime()-dataGetterPre.getChatTime());
+                    setLog("쓰레드 시작3");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    setLog("쓰레드 시작4");
                 }
+                setLog("쓰레드 시작5");
                 setLog("닉네임 "+i+"번째 : "+dataGetter.getNickname());
                 setLog("내용 "+i+"번째 : "+dataGetter.getContent());
                 //전체 채팅내용을 담아 놓았던 ArrayList에서 i번째 채팅을 꺼내어 recyclerview에 출력한다.
+                setLog("쓰레드 시작6");
                 dataList_chatList_recordeds.add(dataList_chatList_recordeds_getter.get(i));
+                setLog("쓰레드 시작7");
                 handler.sendEmptyMessage(GET_CHAT_CONTENT);
 
             }

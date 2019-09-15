@@ -400,9 +400,10 @@ public class LiveListActivity extends AppCompatActivity
                         dataList.setViewer(viewer);
                         dataList.setPassword(password);
                         dataList.setHostNickname(hostNickname);
-
+                        setLog("오디1 : ");
                         dataList_liveLists.add(dataList);
                         adapter_liveList.notifyDataSetChanged();
+                        setLog("오디2 : ");
                     }
 
 
@@ -414,9 +415,11 @@ public class LiveListActivity extends AppCompatActivity
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                setLog("오디3 : ");
             }
         });
+
+        setLog("오디4 : ");
 
         stringRequest.setTag(TAG);
         queue.add(stringRequest);
@@ -499,10 +502,13 @@ public class LiveListActivity extends AppCompatActivity
 
         if (id == R.id.nav_home) {
             Intent intentHome = new Intent(LiveListActivity.this,HomeActivity.class);
-            intentHome.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intentHome.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             startActivity(intentHome);
         } else if (id == R.id.nav_project) {
-
+            Intent intent = new Intent(LiveListActivity.this,ProjectListActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+            finish();
         } /*else if (id == R.id.nav_news) {
 
         } else if (id == R.id.nav_interview) {

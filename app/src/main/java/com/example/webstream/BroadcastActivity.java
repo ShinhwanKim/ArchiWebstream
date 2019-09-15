@@ -251,7 +251,7 @@ public class BroadcastActivity extends AppCompatActivity
 // Set the connection properties for the target Wowza Streaming Engine server or Wowza Streaming Cloud live stream
 
         //-----------------------------와우자 스트리밍 엔진에 송출하기 위한 연결 루트??(수정필요)----------------------------
-        goCoderBroadcastConfig.setHostAddress("15.164.121.33");
+        goCoderBroadcastConfig.setHostAddress("13.209.207.197");
         goCoderBroadcastConfig.setPortNumber(1935);
         goCoderBroadcastConfig.setApplicationName("live");
         goCoderBroadcastConfig.setStreamName(streamRoute);
@@ -430,7 +430,7 @@ public class BroadcastActivity extends AppCompatActivity
                             CommunicateServer("http://13.124.223.128/broadcast/deleteBroadcastList.php",FLAG_NONE);
                             CommunicateServer("http://13.124.223.128/broadcast/insertRecordList.php",FLAG_INSERT_RECORD);
                             setLog("썸네일 경로2 : "+thumbnailRoute);
-                            CommunicateServer("http://15.164.121.33/php/recording/stopRecord.php",FLAG_STOP_RECORD);
+                            CommunicateServer("http://13.209.207.197/php/recording/stopRecord.php",FLAG_STOP_RECORD);
 
                             btnBroadcast.setImageResource(R.drawable.ic_start);
 
@@ -473,7 +473,7 @@ public class BroadcastActivity extends AppCompatActivity
                     //post로 서버에 방송 정보 전달 후 DB에 저장
                     CommunicateServer("http://13.124.223.128/broadcast/insertBroadcast.php",FLAG_INSERT_BROADCAST);
 
-                    CommunicateServer("http://15.164.121.33/php/recording/startRecord.php",FLAG_START_RECORD);
+                    CommunicateServer("http://13.209.207.197/php/recording/startRecord.php",FLAG_START_RECORD);
 
                     sendData("http://13.124.223.128/recording/createRecordChatList.php",CREATE_RECORDING_CHAT_TABLE);
 
@@ -973,7 +973,7 @@ public class BroadcastActivity extends AppCompatActivity
                 setLog("2");
                 //Socket c_socket = new Socket("192.168.0.1",8888);
 
-                SocketAddress addr = new InetSocketAddress("192.168.0.24",8888);
+                SocketAddress addr = new InetSocketAddress("192.168.0.129",8888);
                 try {
                     c_socket.connect(addr);
 

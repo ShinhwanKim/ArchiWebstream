@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
@@ -35,54 +36,88 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener{
+public class ProjectListActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final String TAG = "HomeActivity";
+    private static final String TAG = "ProjectListActivity";
     public void setLog(String content){
-        Log.e(TAG,content);}
+        Log.e(TAG,content);
+    }
 
     public static final int CHANGE_USERID = 100;
     public static final int CHANGE_USERNICKNAME = 200;
     public static final int CHANGE_PROFILE = 300;
 
-
-    String loginedUser;
     NavigationView navigationView;
-    private HttpConnection httpConn = HttpConnection.getInstance();
+    View header;
+    MenuItem menuItemMyprofile;
+    Handler handler;
 
     TextView txtHeaderId;
     TextView txtHeaderNickname;
-    TextView txtHeaderLogout;
-    View header;
-    MenuItem menuItem;
-    Handler handler;
     ImageView imgProfile;
 
+    String getNickname;
+    String loginedUser;
+
+    BottomNavigationView bottomNavigationView;
 
     public static Activity activity = null;
     boolean autoLogin;
 
+    private HttpConnection httpConn = HttpConnection.getInstance();
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+                case R.id.bottom_navigation_projectlist:
+                    setLog("바텀 네비게이션 : 글목록");
+                    return true;
+                case R.id.bottom_navigation_project_subscribe:
+                    setLog("바텀 네비게이션 : 구독");
+//                    Intent intent = new Intent(ProjectListActivity.this,VodListActivity.class);
+//                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+//                    startActivity(intent);
+//                    finish();
+                    return true;
+                case R.id.bottom_navigation_write:
+                    setLog("바텀 네비게이션 : 글쓰기");
+                    Intent intent = new Intent(ProjectListActivity.this,ProjectWriteActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                    startActivity(intent);
+                    return true;
+            }
+            return false;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setLog("onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
-        Toolbar toolbar = findViewById(R.id.toolbar_main);
-        setSupportActionBar(toolbar);
+        setLog("onCreate");
+        setContentView(R.layout.activity_project_list);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout_home);
-        navigationView = findViewById(R.id.nav_view_main);
+        bottomNavigationView = findViewById(R.id.projectlist_bottom_nav);
+        bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+        Toolbar toolbar = findViewById(R.id.toolbar_projectlist);
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_projectlist);
+        navigationView = findViewById(R.id.nav_view_projectlist);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
 
         toggle.syncState();
+
+        toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-        header=navigationView.getHeaderView(0);
 
         Menu menu = navigationView.getMenu();
-        menuItem = menu.findItem(R.id.nav_myprofile);
+        menuItemMyprofile = menu.findItem(R.id.nav_myprofile);
 
         activity = this;
 
@@ -102,12 +137,12 @@ public class HomeActivity extends AppCompatActivity
                     case CHANGE_PROFILE:
                         setLog("핸들러 메세지 확인 (프로필) : "+msg.obj);
                         if(msg.obj.equals("null")){
-                            Glide.with(HomeActivity.this)
+                            Glide.with(ProjectListActivity.this)
                                     .load(R.drawable.user_profile_default_white)
                                     .apply(new RequestOptions().circleCrop())
                                     .into(imgProfile);
                         }else {
-                            Glide.with(HomeActivity.this)
+                            Glide.with(ProjectListActivity.this)
                                     .load(msg.obj)
                                     .apply(new RequestOptions().circleCrop())
                                     .into(imgProfile);
@@ -120,7 +155,6 @@ public class HomeActivity extends AppCompatActivity
                 }
             }
         };
-
     }
 
     @Override
@@ -131,20 +165,16 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     protected void onResume() {
-
         super.onResume();
         setLog("onResume");
-        Intent intent = getIntent();
-        setLog("아이디 : "+intent.getStringExtra("id"));
-        setLog("아이디 : "+intent.getStringExtra("password"));
+        //바텀 네비게이션 뷰 선택
+        bottomNavigationView.setSelectedItemId(R.id.bottom_navigation_projectlist);
 
         SharedPreferences spCurrentUser = getSharedPreferences("currentUser",MODE_PRIVATE);
         loginedUser = spCurrentUser.getString("currentUser","");
         autoLogin = spCurrentUser.getBoolean("autoLogin",false);
-
-
         setLog("로그인 된 사람 : "+loginedUser);
-
+        setLog("자동 로그인 여부 : "+autoLogin);
 
         if(loginedUser.equals("")){
 
@@ -153,109 +183,16 @@ public class HomeActivity extends AppCompatActivity
             navigationView.inflateHeaderView(R.layout.nav_header_logined);
             navigationView.removeHeaderView(navigationView.getHeaderView(0));
             header=navigationView.getHeaderView(0);
-            menuItem.setVisible(true);
+            menuItemMyprofile.setVisible(true);
 
 
             sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php");
 
         }
-        //헤더 추가 가능
-        //navigationView.inflateHeaderView(R.layout.nav_header_logined);
-
-        //헤더 빼기 가능
-        //navigationView.removeHeaderView(navigationView.getHeaderView(0));
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout_home);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    //앱바 메뉴 들
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        /*getMenuInflater().inflate(R.menu.main, menu);*/
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-            // Handle the camera action
-        } else if (id == R.id.nav_project) {
-            Intent intent = new Intent(HomeActivity.this,ProjectListActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-            finish();
-        } /*else if (id == R.id.nav_news) {
-
-        } else if (id == R.id.nav_interview) {
-
-        }*/
-
-        else if (id == R.id.nav_exploration) {
-            Intent intent = new Intent(HomeActivity.this,LiveListActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-            finish();
-        }
-        else if (id == R.id.nav_myprofile) {
-            Intent intent = new Intent(HomeActivity.this,MyProfileActivity.class);
-            intent.putExtra("loginedUser",loginedUser);
-            startActivity(intent);
-        }
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout_home);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-
-
-    }
-    public void OnMoveLoginActivity(View view) {
-        Intent intent = new Intent(HomeActivity.this,LoginActivity.class);
-        SharedPreferences spLastActivity = getSharedPreferences("lastActivity",MODE_PRIVATE);
-        SharedPreferences.Editor editor = spLastActivity.edit();
-        editor.putString("lastActivity","HomeActivity");
-        editor.commit();
-        //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
-    }
-
-    public void OnMoveSignupActivity(View view) {
-        Intent intent = new Intent(HomeActivity.this,SignupActivity.class);
-        SharedPreferences spLastActivity = getSharedPreferences("lastActivity",MODE_PRIVATE);
-        SharedPreferences.Editor editor = spLastActivity.edit();
-        editor.putString("lastActivity","HomeActivity");
-        editor.commit();
-        //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
-    }
     private void sendData(final String param, final String url) {
-// 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
         new Thread() {
             public void run() {
                 httpConn.requestGetUserData(param, callback, url);
@@ -263,6 +200,7 @@ public class HomeActivity extends AppCompatActivity
         }.start();
 
     }
+
     private final Callback callback = new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
@@ -282,9 +220,8 @@ public class HomeActivity extends AppCompatActivity
                 JSONObject getUserData2 = getUserDataArray.getJSONObject(0);
                 setLog("222 : "+String.valueOf(getUserData2));
                 String getId = getUserData2.getString("id");
-                String getNickname = getUserData2.getString("nickname");
+                getNickname = getUserData2.getString("nickname");
                 String getProfile = getUserData2.getString("profileRoute");
-
 
                 setLog("유저아이디 : "+getId);
                 setLog("유저닉네임 : "+getNickname);
@@ -311,9 +248,6 @@ public class HomeActivity extends AppCompatActivity
                 handler.sendMessage(messageProfile);
 
 
-                /*Looper.prepare();
-                Toast.makeText(MainActivity.this, "반갑습니다. "+getNickname+"님", Toast.LENGTH_SHORT).show();
-                Looper.loop();*/
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -321,6 +255,60 @@ public class HomeActivity extends AppCompatActivity
 
         }
     };
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        // Handle navigation view item clicks here.
+        int id = menuItem.getItemId();
+
+        if (id == R.id.nav_home) {
+            Intent intentHome = new Intent(ProjectListActivity.this,HomeActivity.class);
+            intentHome.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intentHome);
+            finish();
+        } else if (id == R.id.nav_project) {
+        } /*else if (id == R.id.nav_news) {
+
+        } else if (id == R.id.nav_interview) {
+
+        }*/
+
+        else if (id == R.id.nav_exploration) {
+            Intent intent = new Intent(ProjectListActivity.this,LiveListActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+            finish();
+
+        } else if (id == R.id.nav_myprofile) {
+            Intent intent = new Intent(ProjectListActivity.this,MyProfileActivity.class);
+            intent.putExtra("loginedUser",loginedUser);
+            startActivity(intent);
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_projectlist);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    public void OnMoveLoginActivity(View view) {
+        Intent intent = new Intent(ProjectListActivity.this,LoginActivity.class);
+        SharedPreferences spLastActivity = getSharedPreferences("lastActivity",MODE_PRIVATE);
+        SharedPreferences.Editor editor = spLastActivity.edit();
+        editor.putString("lastActivity","ProjectListActivity");
+        editor.commit();
+        //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+    }
+
+    public void OnMoveSignupActivity(View view) {
+        Intent intent = new Intent(ProjectListActivity.this,SignupActivity.class);
+        SharedPreferences spLastActivity = getSharedPreferences("lastActivity",MODE_PRIVATE);
+        SharedPreferences.Editor editor = spLastActivity.edit();
+        editor.putString("lastActivity","ProjectListActivity");
+        editor.commit();
+        //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+    }
 
     public void OnLogout(View view) {
         setLog("로그아웃 버튼 클릭");
@@ -331,28 +319,22 @@ public class HomeActivity extends AppCompatActivity
 
         Toast.makeText(this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
 
-        Intent intent = new Intent(HomeActivity.this,HomeActivity.class);
+        Intent intent = new Intent(ProjectListActivity.this,ProjectListActivity.class);
         startActivity(intent);
         finish();
 
 
     }
-    @Override
-    protected void onStop() {
-        setLog("onStop");
-        super.onStop();
 
-    }
+
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        setLog("onDestroy");
-        if(!autoLogin){
-            SharedPreferences spCurrentUser = getSharedPreferences("currentUser",MODE_PRIVATE);
-            SharedPreferences.Editor editor = spCurrentUser.edit();
-            editor.remove("currentUser");
-            editor.commit();
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_livelist);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
     }
 }

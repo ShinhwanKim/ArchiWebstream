@@ -437,10 +437,13 @@ public class VodListActivity extends AppCompatActivity
 
         if (id == R.id.nav_home) {
             Intent intentHome = new Intent(VodListActivity.this,HomeActivity.class);
-            intentHome.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intentHome.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             startActivity(intentHome);
         } else if (id == R.id.nav_project) {
-
+            Intent intent = new Intent(VodListActivity.this,ProjectListActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+            finish();
         } /*else if (id == R.id.nav_news) {
 
         } else if (id == R.id.nav_interview) {

@@ -149,6 +149,13 @@ public class LoginActivity extends AppCompatActivity {
                         activity.finish();
                     }
                 }
+                else if(lastActivity.equals("ProjectListActivity")){
+                    intent = new Intent(LoginActivity.this,ProjectListActivity.class);
+                    if(LiveListActivity.activity!=null){
+                        ProjectListActivity activity = (ProjectListActivity) ProjectListActivity.activity;
+                        activity.finish();
+                    }
+                }
 
                 SharedPreferences spCurrentUser = getSharedPreferences("currentUser",MODE_PRIVATE);
                 SharedPreferences.Editor editor = spCurrentUser.edit();

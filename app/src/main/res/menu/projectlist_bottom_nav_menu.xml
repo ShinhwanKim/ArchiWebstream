@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--<item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/title_home" />-->
+
+    <item
+        android:id="@+id/bottom_navigation_projectlist"
+        android:icon="@drawable/ic_subject_black_24dp"
+        android:title="게시글 목록"/>
+
+
+    <item
+        android:id="@+id/bottom_navigation_project_subscribe"
+        android:icon="@drawable/ic_star_black_24dp"
+        android:title="구독" />
+
+    <item
+        android:id="@+id/bottom_navigation_write"
+        android:icon="@drawable/ic_create_black_24dp"
+        android:title="글쓰기" />
+
+
+
+</menu>

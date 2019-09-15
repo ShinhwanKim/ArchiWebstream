@@ -161,7 +161,7 @@ implements View.OnClickListener {
 
         mStreamPlayerConfig = new WOWZPlayerConfig();
         mStreamPlayerConfig.setIsPlayback(true);
-        mStreamPlayerConfig.setHostAddress("15.164.121.33");   //와우자 스트리밍 서버 IP
+        mStreamPlayerConfig.setHostAddress("13.209.207.197");   //와우자 스트리밍 서버 IP
         mStreamPlayerConfig.setApplicationName("live");        //와우자 서버 중 실시간 스트림 폴더선택. VOD와 LIVE 둘 중 선택 가능.
         mStreamPlayerConfig.setStreamName(routeStream);        //방송 제목. 제목으로 방송 방을 구분한다.
         mStreamPlayerConfig.setPortNumber(1935);               //와우자 스트림을 받아오는 포트
@@ -577,7 +577,7 @@ implements View.OnClickListener {
                 setLog("2");
                 //Socket c_socket = new Socket("192.168.0.1",8888);
 
-                SocketAddress addr = new InetSocketAddress("192.168.0.24",8888);
+                SocketAddress addr = new InetSocketAddress("192.168.0.129",8888);
                 try {
                     c_socket.connect(addr);
 

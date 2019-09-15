@@ -76,23 +76,32 @@ public class Adapter_liveList extends RecyclerView.Adapter<Adapter_liveList.Cust
                 super.run();
                 try {
                     URL url = new URL(mList.get(position).getRouteThumbnail());
+                    setLog("error 1");
 
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    setLog("error 2");
                     conn.setDoInput(true);
+                    setLog("error 3");
                     conn.connect();
+                    setLog("error 4");
 
                     InputStream is = conn.getInputStream();
+                    setLog("error 5");
                     bitmap = BitmapFactory.decodeStream(is);
+                    setLog("error 6");
 
                     /*Thread.sleep(1000);*/
                     /*setLog("얼씨구씨구 돌아간다." + mList.get(position).getTitle());*/
                 } catch (MalformedURLException e) {
+                    setLog("error 7");
                     e.printStackTrace();
                 } catch (IOException e) {
+                    setLog("error 8");
                     e.printStackTrace();
                 }
             }
         };
+        setLog("error 9");
         mThread.start();
 
         try {
