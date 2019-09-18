@@ -58,7 +58,7 @@ public class ProjectListActivity extends AppCompatActivity
     ImageView imgProfile;
 
     String getNickname;
-    String loginedUser;
+    public static String loginedUser;
 
     BottomNavigationView bottomNavigationView;
 

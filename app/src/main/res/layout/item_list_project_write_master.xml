@@ -5,7 +5,7 @@
     android:layout_height="wrap_content">
 
     <LinearLayout
-        android:id="@+id/projectwrite_imgage_list_linear"
+        android:id="@+id/projectwrite_imgage_master_linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -17,7 +17,7 @@
             android:layout_height="wrap_content">
 
             <ImageView
-                android:id="@+id/projectwrite_imgage_list_content"
+                android:id="@+id/projectwrite_imgage_master_content"
                 android:layout_width="65dp"
                 android:layout_height="65dp"
                 android:layout_gravity="start"
@@ -26,18 +26,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!--<TextView-->
-                <!--android:id="@+id/projectwrite_imgage_list_master"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:background="#000000"-->
-                <!--android:paddingLeft="6dp"-->
-                <!--android:paddingRight="6dp"-->
-                <!--android:visibility="gone"-->
-                <!--android:text="대표"-->
-                <!--android:textColor="@color/colorWhite"-->
-                <!--app:layout_constraintStart_toStartOf="parent"-->
-                <!--app:layout_constraintTop_toTopOf="parent" />-->
+            <TextView
+                android:id="@+id/projectwrite_imgage_master_master"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#000000"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:text="대표"
+                android:textColor="@color/colorWhite"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -48,7 +47,7 @@
             android:layout_weight="1"/>
 
         <ImageView
-            android:id="@+id/projectwrite_imgage_list_move"
+            android:id="@+id/projectwrite_imgage_master_move"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"

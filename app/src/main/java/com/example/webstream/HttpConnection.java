@@ -192,5 +192,16 @@ public class HttpConnection {
                 .build();
         client.newCall(request).enqueue(callback);
     }
+    public void requestBoardWrite(String postData, String contentData, Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("postContent", postData)
+                .add("content",contentData)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
 
 }

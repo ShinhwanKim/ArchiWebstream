@@ -1,9 +1,12 @@
 package adapter;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.Spannable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +19,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.example.webstream.MyProfileActivity;
 import com.example.webstream.ProjectWriteActivity;
 import com.example.webstream.R;
 import com.example.webstream.writeItemTouchHelperCallback;
@@ -60,6 +66,7 @@ public class Adapter_projectWriteList extends RecyclerView.Adapter<RecyclerView.
             this.imgDrag = itemView.findViewById(R.id.projectwrite_list_move);
             this.linearLayout = itemView.findViewById(R.id.projectwrite_linear);
 
+
             //포커스 잃었을 때, edittext 내용이 비어 있다면 해당 텍스트 아이템을 없애버린다.
             etxtTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
@@ -90,17 +97,71 @@ public class Adapter_projectWriteList extends RecyclerView.Adapter<RecyclerView.
 
                 }
             });
+            etxtTitle.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    setLog("텍스트에 beforeTextChanged");
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    setLog("텍스트에 onTextChanged");
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    setLog("텍스트에 afterTextChanged");
+                    setLog("포지션은 : "+getAdapterPosition());
+                    ProjectWriteActivity.writeDataList.get(getAdapterPosition()).setName(etxtTitle.getText().toString());
+                }
+            });
         }
     }
     //------------------------------이미지 아이템을 위한 뷰홀더----------------------------
     public class ImageViewHolder extends RecyclerView.ViewHolder{
         protected ImageView imgContent;
         protected ImageView imgDrag;
+        protected LinearLayout linearImg;
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             this.imgContent = itemView.findViewById(R.id.projectwrite_imgage_list_content);
             this.imgDrag = itemView.findViewById(R.id.projectwrite_imgage_list_move);
+            this.linearImg = itemView.findViewById(R.id.projectwrite_imgage_list_linear);
+
+            linearImg.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    setLog("이미지 클릭쓰");
+                    int myPosition = getAdapterPosition();
+                    imageOption(myPosition);
+                }
+            });
+        }
+    }
+
+    //------------------------------대표 이미지 아이템을 위한 뷰홀더----------------------------
+    public class MasterViewHolder extends RecyclerView.ViewHolder{
+        protected ImageView imgContent;
+        protected ImageView imgDrag;
+        protected TextView txtMaster;
+        protected LinearLayout linearImg;
+
+        public MasterViewHolder(@NonNull View itemView) {
+            super(itemView);
+            this.imgContent = itemView.findViewById(R.id.projectwrite_imgage_master_content);
+            this.imgDrag = itemView.findViewById(R.id.projectwrite_imgage_master_move);
+            this.txtMaster = itemView.findViewById(R.id.projectwrite_imgage_master_master);
+            this.linearImg = itemView.findViewById(R.id.projectwrite_imgage_master_linear);
+
+            linearImg.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    setLog("이미지 클릭쓰");
+                    int myPosition = getAdapterPosition();
+                    imageOption(myPosition);
+                }
+            });
         }
     }
 
@@ -125,6 +186,10 @@ public class Adapter_projectWriteList extends RecyclerView.Adapter<RecyclerView.
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_project_write_image,parent,false);
                 ImageViewHolder imageViewHolder = new ImageViewHolder(view);
                 return imageViewHolder;
+            case DataList_project_write.MASTER:
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_project_write_master,parent,false);
+                MasterViewHolder masterViewHolder = new MasterViewHolder(view);
+                return masterViewHolder;
 
         }
         /*View view = LayoutInflater.from(mContext).inflate(R.layout.item_list_project_write_text,parent,false);
@@ -140,17 +205,63 @@ public class Adapter_projectWriteList extends RecyclerView.Adapter<RecyclerView.
 //이미지 아이템일 때
         if(datalist.get(position).getName()==null){
             //아이템 우측 끝 move이미지를 터치지 드래그 앤 드랍 가능
-            ((ImageViewHolder)holder).imgDrag.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    if (event.getActionMasked() == MotionEvent.ACTION_DOWN){
-                        //setLog("터치");
-                        mStartDragListener.onStartDrag(holder);
+
+
+            if(datalist.get(position).isMaster()){
+                Glide.with(mContext)
+                        .load(datalist.get(position).getImgUri())
+                        .apply(new RequestOptions().centerCrop())
+                        .into(((MasterViewHolder)holder).imgContent);
+                ((MasterViewHolder)holder).imgDrag.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        if (event.getActionMasked() == MotionEvent.ACTION_DOWN){
+                            //setLog("터치");
+                            mStartDragListener.onStartDrag(holder);
+                        }
+                        return false;
                     }
-                    return false;
-                }
-            });
+                });
+            }
+
+            else {
+                Glide.with(mContext)
+                        .load(datalist.get(position).getImgUri())
+                        .apply(new RequestOptions().centerCrop())
+                        .into(((ImageViewHolder)holder).imgContent);
+                ((ImageViewHolder)holder).imgDrag.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        if (event.getActionMasked() == MotionEvent.ACTION_DOWN){
+                            //setLog("터치");
+                            mStartDragListener.onStartDrag(holder);
+                        }
+                        return false;
+                    }
+                });
+            }
+
+
         }
+////대표 이미지 아이템일 때
+//        else if(datalist.get(position).isMaster()){
+//            Glide.with(mContext)
+//                    .load(datalist.get(position).getImgUri())
+//                    .apply(new RequestOptions().centerCrop())
+//                    .into(((MasterViewHolder)holder).imgContent);
+//            ((MasterViewHolder)holder).imgDrag.setOnTouchListener(new View.OnTouchListener() {
+//                @Override
+//                public boolean onTouch(View v, MotionEvent event) {
+//                    if (event.getActionMasked() == MotionEvent.ACTION_DOWN){
+//                        //setLog("터치");
+//                        mStartDragListener.onStartDrag(holder);
+//                    }
+//                    return false;
+//                }
+//            });
+//
+//        }
+
 //텍스트 아이템일때
         else {
             //((TextViewHolder)holder).etxtTitle.setOnFocusChangeListener(this);
@@ -208,12 +319,62 @@ public class Adapter_projectWriteList extends RecyclerView.Adapter<RecyclerView.
     public int getItemViewType(int position) {
         //이미지 아이템. 데이터리스트에 name (=텍스트내용)이 없을 때.
         if(datalist.get(position).getName()==null){
+            if(datalist.get(position).isMaster()){
+                return DataList_project_write.MASTER;
+            }
             return DataList_project_write.IMAGE;
         }
+//        //대표 이미지.
+//        else if(datalist.get(position).isMaster()){
+//            return DataList_project_write.MASTER;
+//        }
         //텍스트 아이템
         else {
             return DataList_project_write.TEXT;
         }
+    }
+
+    private void imageOption(final int position){
+        String master = "대표 이미지 지정";
+        String delete = "삭제하기";
+        final int MASTER = 0;
+        final int DELETE = 1;
+        final CharSequence[] items = { master, delete};
+
+        AlertDialog.Builder alertDialogProfile = new AlertDialog.Builder(mContext);
+        alertDialogProfile.setTitle("옵션 선택");
+        alertDialogProfile.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case MASTER:
+                        setLog("대표이미지");
+                        for(int i =0; i<ProjectWriteActivity.writeDataList.size(); i++){
+                            ProjectWriteActivity.writeDataList.get(i).setMaster(false);
+                            notifyDataSetChanged();
+                        }
+                        ProjectWriteActivity.writeDataList.get(position).setMaster(true);
+                        notifyDataSetChanged();
+                        break;
+                    case DELETE:
+                        //setLog("삭제하기 : " + position);
+                        try{
+                            ProjectWriteActivity.writeDataList.remove(position);
+                            notifyDataSetChanged();
+                        }catch (Exception e){
+                            setLog(e.toString());
+                        }
+                        if(ProjectWriteActivity.writeDataList.size()==0){
+                            ProjectWriteActivity.masterIs = false;
+                        }
+                        break;
+                }
+            }
+        });
+
+        AlertDialog ProfileDialog = alertDialogProfile.create();
+
+        ProfileDialog.show();
     }
     @Override
     public int getItemCount() {

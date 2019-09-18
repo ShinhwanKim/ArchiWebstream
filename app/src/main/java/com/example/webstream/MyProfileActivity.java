@@ -60,6 +60,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
@@ -599,6 +600,7 @@ public class MyProfileActivity extends Activity
                                 break;
                             case ALBUM:
                                 Intent intent = new Intent(Intent.ACTION_PICK);
+                                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
                                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
                                 startActivityForResult(intent,PICK_FROM_ALBUM);
                                 break;
