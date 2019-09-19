@@ -4,12 +4,14 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorBlueAccent">#a1b6e9</color>
+    <color name="colorBluePoint">#257EF3</color>
     <color name="colorGrayAccent">#4E4E4E</color>
     <color name="colorGrayChat">#929292</color>
     <color name="colorDark">#000000</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorGold">#b3956f</color>
     <color name="colorGreen">#3ED641</color>
+    <color name="colorBaseText">#B7B7B7</color>
 
     <color name="test">#3ED641</color>
 </resources>

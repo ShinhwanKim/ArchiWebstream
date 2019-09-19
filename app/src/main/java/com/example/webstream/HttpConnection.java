@@ -204,4 +204,15 @@ public class HttpConnection {
         client.newCall(request).enqueue(callback);
     }
 
+    public void requestGetBoard(String postNumber, Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("postNumber", postNumber)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+
 }

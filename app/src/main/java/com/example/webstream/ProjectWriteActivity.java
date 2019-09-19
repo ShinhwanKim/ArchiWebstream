@@ -202,6 +202,7 @@ public class ProjectWriteActivity extends AppCompatActivity
                             //게시글 내용이 될 JSONArray
                             contentArray = new JSONArray();
 
+                            //게시글 아이템 하나하나의 정보 json 으로 만들어 주는 작업.
                             for(int i=0;i<writeDataList.size();i++){
                                 setLog(i+"번째 리스트 네임 : "+writeDataList.get(i).getName());
                                 setLog(i+"번째 리스트 이미지 : "+writeDataList.get(i).getImgUri());
@@ -232,33 +233,37 @@ public class ProjectWriteActivity extends AppCompatActivity
                                         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,ExifInterface.ORIENTATION_UNDEFINED);
                                         setLog("ddddddd : "+ orientation);
 
+
                                         if(orientation == 130){
-
-                                            Bitmap rotateImg;
-                                            Matrix rotateMatrix = new Matrix();
-                                            rotateMatrix.postRotate(270);
-                                            rotateImg = BitmapFactory.decodeFile(writeDataList.get(i).getImgUri().getPath());
-
-                                            rotateImg = Bitmap.createBitmap(rotateImg,0,0,rotateImg.getWidth(),rotateImg.getHeight(),rotateMatrix,false);
-                                            SaveBitmapToFileCache(rotateImg,writeDataList.get(i).getImgUri().getPath(),"ttt");
-
-                                            String ImageUploadURL = "http://13.124.223.128/uploadImg/boardImg/uploadBoardImage.php";
-                                            new ImageUploadTask().execute(
-                                                    ImageUploadURL,
-                                                    writeDataList.get(i).getImgUri().getPath(),
-                                                    String.valueOf(i),
-                                                    String.valueOf(writeDataList.get(i).isMaster()),
-                                                    lastItem);
+                                            //이미지 회전되는 문제 잡으려고 추가했던 코드 . 도움안되서 버림
+//                                            Bitmap rotateImg;
+//                                            Matrix rotateMatrix = new Matrix();
+//                                            rotateMatrix.postRotate(270);
+//                                            rotateImg = BitmapFactory.decodeFile(writeDataList.get(i).getImgUri().getPath());
+//
+//                                            rotateImg = Bitmap.createBitmap(rotateImg,0,0,rotateImg.getWidth(),rotateImg.getHeight(),rotateMatrix,false);
+//                                            SaveBitmapToFileCache(rotateImg,writeDataList.get(i).getImgUri().getPath(),"ttt");
+//
+//                                            String ImageUploadURL = "http://13.124.223.128/uploadImg/boardImg/uploadBoardImage.php";
+//                                            new ImageUploadTask().execute(
+//                                                    ImageUploadURL,
+//                                                    writeDataList.get(i).getImgUri().getPath(),
+//                                                    String.valueOf(i),
+//                                                    String.valueOf(writeDataList.get(i).isMaster()),
+//                                                    lastItem);
 
 
                                         }
                                         else {
-                                            setLog("결과물 업로드 전 이미지 : "+writeDataList.get(i).getImgUri().getPath());
-                                            setLog("결과물 업로드 전 순서 : "+i);
-                                            setLog("결과물 업로드 전 대표 : "+String.valueOf(writeDataList.get(i).isMaster()));
-                                            setLog("결과물 업로드 전 순서 : "+i);
-                                            setLog("결과물 업로드 전 순서 : "+i);
-                                            setLog("결과물 업로드 전 순서 : "+i);
+//                                            setLog("결과물 업로드 전 이미지 : "+writeDataList.get(i).getImgUri().getPath());
+//                                            setLog("결과물 업로드 전 순서 : "+i);
+//                                            setLog("결과물 업로드 전 대표 : "+String.valueOf(writeDataList.get(i).isMaster()));
+//                                            setLog("결과물 업로드 전 순서 : "+i);
+//                                            setLog("결과물 업로드 전 순서 : "+i);
+//                                            setLog("결과물 업로드 전 순서 : "+i);
+
+
+                                            //이미지만 먼저 서버에 업로드 하고 저장이 완료되면 저장된 경로 받아옴.
                                             String ImageUploadURL = "http://13.124.223.128/uploadImg/boardImg/uploadBoardImage.php";
                                             new ImageUploadTask().execute(
                                                     ImageUploadURL,
@@ -433,6 +438,7 @@ public class ProjectWriteActivity extends AppCompatActivity
                 setLog("마지막이다");
 
                 setLog("결과물" + jsonPost);
+                setLog("결과물2" + contentArray);
                 sendData(jsonPost,contentArray);
 
 //                try {
@@ -498,6 +504,8 @@ public class ProjectWriteActivity extends AppCompatActivity
 //
 //        }
 //    }
+
+    //게시글 정보 저장 하는 메서드 인자값[0]은 게시글 기본 정보(제목, 작성자, 위치, 소유자등) 인자값[1]은 게시글 내용.
     private void sendData(final JSONObject jsonContent, final JSONArray jsonArrayContent) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
         final String url = "http://13.124.223.128/board/saveBoardContent.php";
@@ -523,6 +531,7 @@ public class ProjectWriteActivity extends AppCompatActivity
         }
     };
 
+    //이미지 Okhttp 로 업로드
     public static class JSONParser{
 
         public static JSONObject uploadImage(String imageUploadUrl, String sourceImageFile){
