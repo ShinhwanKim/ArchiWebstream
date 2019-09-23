@@ -20,13 +20,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ViewProjectActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".UserChannelProjectActivity"></activity>
+        <activity android:name=".ViewProjectActivity"></activity>
         <activity android:name=".ProjectWriteActivity"></activity>
         <activity android:name=".ProjectListActivity" />
         <activity android:name=".VodListActivity" />
@@ -35,7 +30,11 @@
         <activity android:name=".SignupActivity" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".HomeActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".Main3Activity" />
         <activity android:name=".ViewRecordedActivity" />

@@ -215,4 +215,50 @@ public class HttpConnection {
         client.newCall(request).enqueue(callback);
     }
 
+    public void requestLike(String postNumber,String flag, Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("postNumber", postNumber)
+                .add("flag", flag)
+                .add("loginedId",HomeActivity.loginedUser)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestLikeList(String postNumber, Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("postNumber", postNumber)
+                .add("loginedId",HomeActivity.loginedUser)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestProjectList(String param, int param2,String currentUser,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("param", param)
+                .add("startIndex",String.valueOf(param2))
+                .add("currentUser", currentUser)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestProjectListChannel(String param,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("targetId", param)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+
 }

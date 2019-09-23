@@ -4,9 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,7 +20,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -56,6 +63,13 @@ public class ViewProjectActivity extends AppCompatActivity
     public static final int CHANGE_VIEW = 6;
     public static final int CHANGE_LIKE = 7;
     public static final int ADD_TEXTVIEW = 8;
+    public static final int TTT = 9;
+    public static final int ADD_IMAGE = 10;
+    public static final int LIKE_UP = 11;
+    public static final int LIKE_DOWN = 12;
+    public static final int GET_LIKE_LIST = 13;
+
+
 
 
     TextView txtWritter;            //게시글 작성자. 클릭 시 작성자의 활동 목록을 보여준다.
@@ -68,31 +82,44 @@ public class ViewProjectActivity extends AppCompatActivity
     TextView txtViewCount;
     TextView txtOwnerSecond;
     TextView txtLocation;
+    TextView txtLoading;
 
     ImageView imgMasterImg;         //게시글의 대표 이미지. 클릭시 전체보기
     ImageView imgUp;
 
     LinearLayout linearContent;
     TextView addText;
+    //ImageView addImage;
+    String requestBody;
+    int postNumber;
 
-
+    ScrollView scrollView;
 
 //    RecyclerView recyContent;       //게시글 내용이 들어가는 리사이클러뷰. 2가지 뷰타입이 있다. 이미지, 텍스트 본문
     private ArrayList<DataList_project_view> dataList_project_content;
 //    private Adapter_projectView adapter_projectView;
 
-    Boolean isLike;                 //게시글 좋아요 여부 확인하는 불린.
+    Boolean isLike=null;                 //게시글 좋아요 여부 확인하는 불린.
 
     private HttpConnection httpConn = HttpConnection.getInstance();
     Handler handler;
     Bitmap bitmap;
+    Bitmap bitmapContent;
 
+    int likeCount;
+    LoadingTask loadingTask;
+    String startPostNumber;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_project);
+
+        Intent intent = getIntent();
+        startPostNumber= intent.getStringExtra("postNumber");
+        setLog("받아온 포스트 넘버 : "+startPostNumber);
+
 
         txtTitle = findViewById(R.id.viewproject_text_title);
         txtOwner = findViewById(R.id.viewproject_text_owner);
@@ -104,19 +131,37 @@ public class ViewProjectActivity extends AppCompatActivity
         imgLikeIcon = findViewById(R.id.viewproject_image_likeicon);
         txtLike = findViewById(R.id.viewproject_text_like);
         txtLikeCount = findViewById(R.id.viewproject_text_likecount);
+        txtLoading = findViewById(R.id.viewproject_loading);
         imgMasterImg = findViewById(R.id.viewproject_image_masterimage);
-        //recyContent = findViewById(R.id.viewproject_recycler_content);
+//        recyContent = findViewById(R.id.viewproject_recycler_content);
         imgUp = findViewById(R.id.viewproject_image_up);
         linearContent = findViewById(R.id.viewproject_linear_content);
+        //addImage = new ImageView(ViewProjectActivity.this);
+        scrollView = findViewById(R.id.viewproject_scrollview);
 
         txtWritter.setOnClickListener(this);
         imgLikeIcon.setOnClickListener(this);
         txtLike.setOnClickListener(this);
         imgMasterImg.setOnClickListener(this);
+        imgUp.setOnClickListener(this);
 
-        isLike = false;
+        loadingTask = new LoadingTask();
+        loadingTask.execute();
+//        Thread getThread = new Thread(){
+//            @Override
+//            public void run() {
+//                super.run();
+//
+//            }
+//        };
+//        getThread.start();
+        getMyLikeList(startPostNumber);
+        getBoardContent(startPostNumber);
 
-        getBoardContent("27");
+
+
+
+
 
         handler = new Handler(){
             @Override
@@ -147,7 +192,346 @@ public class ViewProjectActivity extends AppCompatActivity
                         txtLikeCount.setText(String.valueOf(msg.obj));
                         break;
                     case ADD_TEXTVIEW:
-                        linearContent.addView(addText);
+                        //linearContent.addView(addText);
+//                        adapter_projectView.notifyItemChanged(dataList_project_content.size());
+                        break;
+                    case ADD_IMAGE:
+                        //addImage.setImageBitmap(bitmapContent);
+                        break;
+                    case LIKE_UP:
+                        likeCount++;
+                        txtLikeCount.setText(String.valueOf(likeCount));
+                        break;
+                    case LIKE_DOWN:
+                        likeCount--;
+                        txtLikeCount.setText(String.valueOf(likeCount));
+                        break;
+                    case GET_LIKE_LIST:
+                        setLog("어니냐1");
+                        if(msg.obj.equals("1")){
+                            setLog("어니냐2");
+                            IsLike();
+                        }else if(msg.obj.equals("0")){
+                            setLog("어니냐3");
+                            IsDisLike();
+                        }
+                        break;
+
+                    case TTT:
+                        try {
+                            setLog("어니냐4");
+                            JSONObject jsonContentDummy = new JSONObject(requestBody);
+                            String dummyData = jsonContentDummy.getString("BoardContent");
+                            JSONArray jsonArrayContentDumm = new JSONArray(dummyData);
+                            JSONObject dummyDataYet = jsonArrayContentDumm.getJSONObject(0);
+                            String strPostNumber = dummyDataYet.getString("number");
+                            String strPostTitle = dummyDataYet.getString("title");
+                            String strPostOwner = dummyDataYet.getString("owner");
+                            String strPostLocation = dummyDataYet.getString("location");
+                            String strPostWritter = dummyDataYet.getString("writter");
+                            String strPostWrittenDate = dummyDataYet.getString("writtenDate");
+                            String strPostView = dummyDataYet.getString("view");
+                            String strPostLike = dummyDataYet.getString("like");
+                            likeCount = Integer.parseInt(strPostLike);
+
+                            setLog("게시글 정보 strPostNumber : "+strPostNumber);
+                            postNumber = Integer.parseInt(strPostNumber);
+                            setLog("게시글 정보 strPostTitle : "+strPostTitle);
+                            setLog("게시글 정보 strPostOwner : "+strPostOwner);
+                            setLog("게시글 정보 strPostLocation : "+strPostLocation);
+                            setLog("게시글 정보 strPostWritter: "+strPostWritter);
+                            setLog("게시글 정보 strPostWrittenDate: "+strPostWrittenDate);
+                            setLog("게시글 정보 strPostView: "+strPostView);
+                            setLog("게시글 정보 strPostLike: "+strPostLike);
+                            String[] splitWrittenDate = strPostWrittenDate.split(" ");
+
+                            Message messageTitle = handler.obtainMessage();
+                            messageTitle.what = CHANGE_TITLE;
+                            messageTitle.obj = strPostTitle;
+                            handler.sendMessage(messageTitle);
+
+                            Message messageOwner = handler.obtainMessage();
+                            messageOwner.what = CHANGE_OWNER;
+                            messageOwner.obj = strPostOwner;
+                            handler.sendMessage(messageOwner);
+
+                            Message messageLocation = handler.obtainMessage();
+                            messageLocation.what = CHANGE_LOCATION;
+                            messageLocation.obj = strPostLocation;
+                            handler.sendMessage(messageLocation);
+
+                            Message messageWritter = handler.obtainMessage();
+                            messageWritter.what = CHANGE_WRITTER;
+                            messageWritter.obj = strPostWritter;
+                            handler.sendMessage(messageWritter);
+
+                            Message messageWrittenDate = handler.obtainMessage();
+                            messageWrittenDate.what = CHANGE_WRITTENDATE;
+                            messageWrittenDate.obj = splitWrittenDate[0];
+                            handler.sendMessage(messageWrittenDate);
+
+                            Message messageView = handler.obtainMessage();
+                            messageView.what = CHANGE_VIEW;
+                            messageView.obj = strPostView;
+                            handler.sendMessage(messageView);
+
+                            Message messageLike = handler.obtainMessage();
+                            messageLike.what = CHANGE_LIKE;
+                            messageLike.obj = strPostLike;
+                            handler.sendMessage(messageLike);
+
+                            setLog("추적1");
+                            JSONArray jsonArrayContentDummyYet = new JSONArray(dummyDataYet.getString("content"));
+                            for(int i=0;i<jsonArrayContentDummyYet.length();i++){
+                                setLog("추적2");
+                                JSONObject contentData = jsonArrayContentDummyYet.getJSONObject(i);
+                                int contentPosition = 0;
+                                String contentText= null;
+                                String contentImageUrl = null;
+                                Boolean contentMaster = null;
+                                int contentOrientation = 0;
+                                setLog("추적3");
+                                try{
+                                    contentPosition = Integer.parseInt(contentData.getString("position"));
+                                    setLog("게시글 위치 contentPosition : "+contentPosition);
+                                    setLog("추적4");
+                                }catch (Exception e){
+
+                                }
+                                try{
+                                    contentText = contentData.getString("text");
+                                    setLog("게시글 내용 contentText : "+contentText);
+                                    setLog("추적5");
+                                }catch (Exception e){
+
+                                }
+                                try{
+                                    contentOrientation = Integer.parseInt(contentData.getString("orientation"));
+                                    setLog("게시글 내용 contentOrientation : "+contentOrientation);
+                                    setLog("추적5");
+                                }catch (Exception e){
+
+                                }try{
+                                    contentImageUrl = contentData.getString("imagePath");
+                                    setLog("게시글 이미지 contentImageUrl : "+contentImageUrl);
+                                    setLog("추적6");
+                                }catch (Exception e){
+
+                                }try{
+                                    contentMaster = Boolean.valueOf(contentData.getString("isMaster"));
+                                    setLog("게시글 대표 contentMaster : "+contentMaster);
+                                    setLog("추적7");
+                                    if(contentMaster){
+                                        final String finalContentImageUrl = contentImageUrl;
+                                        Thread mThread = new Thread(){
+                                            @Override
+                                            public void run() {
+                                                super.run();
+                                                try {
+                                                    URL url = new URL(finalContentImageUrl);
+                                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                                    conn.setDoInput(true);
+                                                    conn.connect();
+                                                    InputStream is = conn.getInputStream();
+                                                    bitmap = BitmapFactory.decodeStream(is);
+                                                } catch (MalformedURLException e) {
+                                                    e.printStackTrace();
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        };
+                                        mThread.start();
+                                        setLog("으디보자1");
+                                        try {
+                                            mThread.join();
+                                            setLog("으디보자2");
+//                                            ExifInterface exif = new ExifInterface(String.valueOf(bitmap));
+//                                            setLog("으디보자3");
+//                                            int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+//                                            setLog("으디보자" + exifOrientation);
+                                            if(contentOrientation==6){
+                                                Matrix rotateMatrix = new Matrix();
+                                                setLog("으디보자4");
+                                                rotateMatrix.postRotate(90);
+                                                setLog("으디보자5");
+                                                bitmap = Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),rotateMatrix,false);
+                                                setLog("으디보자6");
+                                            }
+
+
+                                            imgMasterImg.setImageBitmap(bitmap);
+                                            setLog("으디보자7");
+                                /*Glide.with(ViewProjectActivity.this)
+                                        .load(bitmap)
+                                        .apply(new RequestOptions().centerCrop())
+                                        .into(imgMasterImg);*/
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        mThread.isInterrupted();
+                                    }
+                                }catch (Exception e){
+
+                                }
+
+                                DataList_project_view contentDataList = new DataList_project_view();
+                                try{
+                                    contentDataList.setPosition(contentPosition);
+                                }catch (Exception e){
+
+                                }
+                                try{
+                                    contentDataList.setName(contentText);
+                                }catch (Exception e){
+
+                                }
+                                try{
+                                    contentDataList.setImgUrl(contentImageUrl);
+                                }catch (Exception e){
+
+                                }
+                                try{
+                                    contentDataList.setMaster(contentMaster);
+                                }catch (Exception e){
+
+                                }
+                                try{
+                                    contentDataList.setOrientation(contentOrientation);
+                                }catch (Exception e){
+
+                                }
+
+                                dataList_project_content.add(contentDataList);
+//                    dataList_project_content.add(contentDataList);
+//                    adapter_projectView.notifyItemChanged(dataList_project_content.size());
+
+
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        //
+                        final ArrayList<DataList_project_view> lastDataSet = new ArrayList<DataList_project_view>();
+                        for(int i=0;i<dataList_project_content.size();i++){
+                            for(int k=0;k<dataList_project_content.size();k++){
+                                if(dataList_project_content.get(k).getPosition()==i){
+                                    setLog("비교 : "+i);
+                                    setLog("비교 : "+dataList_project_content.get(k).getPosition());
+
+                                    lastDataSet.add(dataList_project_content.get(k));
+                                }
+                            }
+
+                        }
+                        for(int i=0;i<lastDataSet.size();i++){
+                            //dataList_project_content.add(lastDataSet.get(i));
+                            //adapter_projectView.notifyItemChanged(dataList_project_content.size());
+                            setLog("돌아가나 : "+i);
+
+//                setLog("제발 : "+i+"   "+lastDataSet.get(i).getPosition());
+//                setLog("제발 : "+i+"   "+lastDataSet.get(i).getName());
+//                setLog("제발 : "+i+"   "+lastDataSet.get(i).getImgUrl());
+//                setLog("제발 : "+i+"   "+lastDataSet.get(i).isMaster());
+
+                            if(lastDataSet.get(i).getName()!=null){
+                                setLog("텍스트 생겨라");
+                                TextView addText = new TextView(ViewProjectActivity.this);
+                                setLog("텍스트 생겨라2");
+                                addText.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//                                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) addText.getLayoutParams();
+//                                layoutParams.leftMargin = 30;
+//                                addText.setLayoutParams(layoutParams);
+                                setLog("텍스트 생겨라3");
+                                addText.setBackgroundColor(Color.parseColor("#00FFFFFF"));
+                                setLog("텍스트 생겨라4");
+                                addText.setPadding(50, 10, 50, 100);
+                                addText.setTextColor(Color.parseColor("#000000"));
+                                addText.setTextSize(18);
+                                addText.setText(lastDataSet.get(i).getName());
+                                setLog("텍스트 생겨라5");
+                                linearContent.addView(addText);
+                                setLog("텍스트 생겨라6");
+                            }else {
+
+                                final String imgUrl = lastDataSet.get(i).getImgUrl();
+                                final int imgOrientation = lastDataSet.get(i).getOrientation();
+                                setLog("이미지 생겨라 : "+imgUrl);
+                                final ImageView addImage = new ImageView(ViewProjectActivity.this);
+                                addImage.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                                addImage.setBackgroundResource(R.drawable.loadingimag);
+                                addImage.setAdjustViewBounds(true);
+                                addImage.setPadding(0, 0, 0, 100);
+                                final Bitmap[] contentBitmap = new Bitmap[1];
+                                setLog("이미지 생겨라 1");
+                                Thread mThread = new Thread(){
+                                    @Override
+                                    public void run() {
+                                        super.run();
+                                        try {
+                                            setLog("이미지 생겨라 2");
+                                            URL url = new URL(imgUrl);
+                                            setLog("이미지 생겨라 3");
+                                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                            setLog("이미지 생겨라 4");
+                                            conn.setDoInput(true);
+                                            conn.connect();
+                                            InputStream is = conn.getInputStream();
+                                            setLog("이미지 생겨라 5");
+                                            contentBitmap[0] = BitmapFactory.decodeStream(is);
+
+                                            if(imgOrientation==6){
+                                                Matrix rotateMatrix = new Matrix();
+                                                setLog("으디보자4");
+                                                rotateMatrix.postRotate(90);
+                                                setLog("으디보자5");
+                                                contentBitmap[0] = Bitmap.createBitmap(contentBitmap[0],0,0,contentBitmap[0].getWidth(),contentBitmap[0].getHeight(),rotateMatrix,false);
+                                                setLog("으디보자6");
+                                            }
+
+
+                                            setLog("이미지 생겨라 6");
+
+//                                            Message messageAddImg = handler.obtainMessage();
+//                                            messageAddImg.what = ADD_IMAGE;
+//                                            handler.sendMessage(messageAddImg);
+
+
+                                            //addImage.setImageBitmap(contentBitmap[0]);
+                                            setLog("이미지 생겨라 7");
+
+                                            setLog("이미지 생겨라 8");
+                                        } catch (MalformedURLException e) {
+                                            e.printStackTrace();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                };
+                                mThread.start();
+                                try {
+                                    mThread.join();
+                                    addImage.setImageBitmap(contentBitmap[0]);
+                                    setLog("으디보자7");
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                mThread.isInterrupted();
+                                linearContent.addView(addImage);
+
+                                setLog("이미지 생겨라5");
+                            }
+
+
+
+
+                        }
+
+                        txtLoading.setVisibility(View.GONE);
+                        loadingTask.progressDialog.dismiss();
+                        loadingTask.cancel(true);
                         break;
                 }
             }
@@ -162,6 +546,7 @@ public class ViewProjectActivity extends AppCompatActivity
 
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -173,39 +558,131 @@ public class ViewProjectActivity extends AppCompatActivity
         switch (view.getId()){
             case R.id.viewproject_text_writter:
                 setLog("작성자 클릭");
+                if(HomeActivity.loginedUser.equals(txtWritter.getText().toString())){
+                    //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+                }else {
+                    Intent intent = new Intent(ViewProjectActivity.this, UserChannelProjectActivity.class);
+                    intent.putExtra("writter",txtWritter.getText().toString());
+                    startActivity(intent);
+                }
+
                 break;
             case R.id.viewproject_image_likeicon:
             case R.id.viewproject_text_like:
                 setLog("좋아요 클릭");
                 //사용자가 이 게시글을 좋아요 했었다면.
                 if(isLike){
-                    txtLike.setTextColor(Color.parseColor("#727272"));
-                    txtLikeCount.setTextColor(Color.parseColor("#000000"));
-                    imgLikeIcon.setImageResource(R.drawable.ic_thumb_up_black_24dp);
-                    isLike = false;
+                    IsDisLike();
+
+
+                    Message likeDown = handler.obtainMessage();
+                    likeDown.what = LIKE_DOWN;
+                    handler.sendMessage(likeDown);
+
+                    touchLike(String.valueOf(postNumber),"DOWN");
+
                 }else {
-                    txtLike.setTextColor(Color.parseColor("#257EF3"));
-                    txtLikeCount.setTextColor(Color.parseColor("#257EF3"));
-                    imgLikeIcon.setImageResource(R.drawable.ic_thumb_up_blue_24dp);
-                    isLike = true;
+                    IsLike();
+
+                    Message likeUp = handler.obtainMessage();
+                    likeUp.what = LIKE_UP;
+                    handler.sendMessage(likeUp);
+
+                    touchLike(String.valueOf(postNumber),"UP");
                 }
 
                 break;
             case R.id.viewproject_image_masterimage:
                 setLog("대표 이미지 클릭");
+                //imgMasterImg.setImageBitmap(bitmap);
                 break;
             case R.id.viewproject_image_up:
                 setLog("가장 위로 클릭");
+                //scrollView.scrollTo(0,0);
+                scrollView.smoothScrollTo(0,0);
                 break;
 
         }
     }
+    private void IsDisLike(){
+        txtLike.setTextColor(Color.parseColor("#727272"));
+        txtLikeCount.setTextColor(Color.parseColor("#000000"));
+        imgLikeIcon.setImageResource(R.drawable.ic_thumb_up_black_24dp);
+        isLike = false;
+    }
+    private void IsLike(){
+        txtLike.setTextColor(Color.parseColor("#257EF3"));
+        txtLikeCount.setTextColor(Color.parseColor("#257EF3"));
+        imgLikeIcon.setImageResource(R.drawable.ic_thumb_up_blue_24dp);
+        isLike = true;
+    }
+    private class LoadingTask extends AsyncTask<Void,Void,Void>{
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            setLog("onPreExecute");
+            progressDialog = new ProgressDialog(ViewProjectActivity.this);
+            progressDialog.setMessage("데이터 불러오는 중...");
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            setLog("doInBackground");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            setLog("onPostExecute");
+            if(progressDialog != null){
+                progressDialog.dismiss();
+            }
+
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        Intent intent = new Intent(ViewProjectActivity.this,ProjectListActivity.class);
+//        startActivity(intent);
+//        finish();
+    }
+
     private void getBoardContent(final String postNumber) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
         final String url = "http://13.124.223.128/board/getBoardContent.php";
         new Thread() {
             public void run() {
                 httpConn.requestGetBoard(postNumber,callback, url);
+            }
+        }.start();
+    }
+    private void getMyLikeList(final String postNumber) {
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        final String url = "http://13.124.223.128/board/getMyLikeList.php";
+        new Thread() {
+            public void run() {
+                httpConn.requestLikeList(postNumber,likeListCallback, url);
+            }
+        }.start();
+    }
+
+    private void touchLike(final String postNumber, final String flag) {
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        final String url = "http://13.124.223.128/board/boardLike.php";
+        new Thread() {
+            public void run() {
+                httpConn.requestLike(postNumber,flag,likeCallback, url);
             }
         }.start();
     }
@@ -216,242 +693,44 @@ public class ViewProjectActivity extends AppCompatActivity
         }
         @Override
         public void onResponse(Call call, okhttp3.Response response) throws IOException {
-            String body = response.body().string();
-            setLog("서버에서 응답한 Body:"+body);
+            requestBody = response.body().string();
+            setLog("서버에서 응답한 Bodycallback:"+requestBody);
 
-            try {
-                JSONObject jsonContentDummy = new JSONObject(body);
-                String dummyData = jsonContentDummy.getString("BoardContent");
-                JSONArray jsonArrayContentDumm = new JSONArray(dummyData);
-                JSONObject dummyDataYet = jsonArrayContentDumm.getJSONObject(0);
-                String strPostNumber = dummyDataYet.getString("number");
-                String strPostTitle = dummyDataYet.getString("title");
-                String strPostOwner = dummyDataYet.getString("owner");
-                String strPostLocation = dummyDataYet.getString("location");
-                String strPostWritter = dummyDataYet.getString("writter");
-                String strPostWrittenDate = dummyDataYet.getString("writtenDate");
-                String strPostView = dummyDataYet.getString("view");
-                String strPostLike = dummyDataYet.getString("like");
-
-                setLog("게시글 정보 strPostNumber : "+strPostNumber);
-                setLog("게시글 정보 strPostTitle : "+strPostTitle);
-                setLog("게시글 정보 strPostOwner : "+strPostOwner);
-                setLog("게시글 정보 strPostLocation : "+strPostLocation);
-                setLog("게시글 정보 strPostWritter: "+strPostWritter);
-                setLog("게시글 정보 strPostWrittenDate: "+strPostWrittenDate);
-                setLog("게시글 정보 strPostView: "+strPostView);
-                setLog("게시글 정보 strPostLike: "+strPostLike);
-                String[] splitWrittenDate = strPostWrittenDate.split(" ");
-
-                Message messageTitle = handler.obtainMessage();
-                messageTitle.what = CHANGE_TITLE;
-                messageTitle.obj = strPostTitle;
-                handler.sendMessage(messageTitle);
-
-                Message messageOwner = handler.obtainMessage();
-                messageOwner.what = CHANGE_OWNER;
-                messageOwner.obj = strPostOwner;
-                handler.sendMessage(messageOwner);
-
-                Message messageLocation = handler.obtainMessage();
-                messageLocation.what = CHANGE_LOCATION;
-                messageLocation.obj = strPostLocation;
-                handler.sendMessage(messageLocation);
-
-                Message messageWritter = handler.obtainMessage();
-                messageWritter.what = CHANGE_WRITTER;
-                messageWritter.obj = strPostWritter;
-                handler.sendMessage(messageWritter);
-
-                Message messageWrittenDate = handler.obtainMessage();
-                messageWrittenDate.what = CHANGE_WRITTENDATE;
-                messageWrittenDate.obj = splitWrittenDate[0];
-                handler.sendMessage(messageWrittenDate);
-
-                Message messageView = handler.obtainMessage();
-                messageView.what = CHANGE_VIEW;
-                messageView.obj = strPostView;
-                handler.sendMessage(messageView);
-
-                Message messageLike = handler.obtainMessage();
-                messageLike.what = CHANGE_LIKE;
-                messageLike.obj = strPostLike;
-                handler.sendMessage(messageLike);
-
-                setLog("추적1");
-                JSONArray jsonArrayContentDummyYet = new JSONArray(dummyDataYet.getString("content"));
-                for(int i=0;i<jsonArrayContentDummyYet.length();i++){
-                    setLog("추적2");
-                    JSONObject contentData = jsonArrayContentDummyYet.getJSONObject(i);
-                    int contentPosition = 0;
-                    String contentText= null;
-                    String contentImageUrl = null;
-                    Boolean contentMaster = null;
-                    setLog("추적3");
-                    try{
-                        contentPosition = Integer.parseInt(contentData.getString("position"));
-                        setLog("게시글 위치 contentPosition : "+contentPosition);
-                        setLog("추적4");
-                    }catch (Exception e){
-
-                    }
-                    try{
-                        contentText = contentData.getString("text");
-                        setLog("게시글 내용 contentText : "+contentText);
-                        setLog("추적5");
-                    }catch (Exception e){
-
-                    }try{
-                        contentImageUrl = contentData.getString("imagePath");
-                        setLog("게시글 이미지 contentImageUrl : "+contentImageUrl);
-                        setLog("추적6");
-                    }catch (Exception e){
-
-                    }try{
-                        contentMaster = Boolean.valueOf(contentData.getString("isMaster"));
-                        setLog("게시글 대표 contentMaster : "+contentMaster);
-                        setLog("추적7");
-                        if(contentMaster){
-                            final String finalContentImageUrl = contentImageUrl;
-                            Thread mThread = new Thread(){
-                                @Override
-                                public void run() {
-                                    super.run();
-                                    try {
-                                        URL url = new URL(finalContentImageUrl);
-                                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                        conn.setDoInput(true);
-                                        conn.connect();
-                                        InputStream is = conn.getInputStream();
-                                        bitmap = BitmapFactory.decodeStream(is);
-                                    } catch (MalformedURLException e) {
-                                        e.printStackTrace();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            };
-                            mThread.start();
-
-                            try {
-                                mThread.join();
-                                imgMasterImg.setImageBitmap(bitmap);
-                                /*Glide.with(ViewProjectActivity.this)
-                                        .load(bitmap)
-                                        .apply(new RequestOptions().centerCrop())
-                                        .into(imgMasterImg);*/
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            mThread.isInterrupted();
-                        }
-                    }catch (Exception e){
-
-                    }
-                    DataList_project_view contentDataList = new DataList_project_view();
-                    try{
-                        contentDataList.setPosition(contentPosition);
-                    }catch (Exception e){
-
-                    }
-                    try{
-                        contentDataList.setName(contentText);
-                    }catch (Exception e){
-
-                    }
-                    try{
-                        contentDataList.setImgUrl(contentImageUrl);
-                    }catch (Exception e){
-
-                    }
-                    try{
-                        contentDataList.setMaster(contentMaster);
-                    }catch (Exception e){
-
-                    }
-
-                    dataList_project_content.add(contentDataList);
-//                    dataList_project_content.add(contentDataList);
-//                    adapter_projectView.notifyItemChanged(dataList_project_content.size());
-
-
-
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            //
-            ArrayList<DataList_project_view> lastDataSet = new ArrayList<DataList_project_view>();
-            for(int i=0;i<dataList_project_content.size();i++){
-                for(int k=0;k<dataList_project_content.size();k++){
-                    if(dataList_project_content.get(k).getPosition()==i){
-                        setLog("비교 : "+i);
-                        setLog("비교 : "+dataList_project_content.get(k).getPosition());
-
-                        lastDataSet.add(dataList_project_content.get(k));
-                    }
-                }
-
-            }
-            for(int i=0;i<lastDataSet.size();i++){
-                setLog("제발 : "+i+"   "+lastDataSet.get(i).getPosition());
-                setLog("제발 : "+i+"   "+lastDataSet.get(i).getName());
-                setLog("제발 : "+i+"   "+lastDataSet.get(i).getImgUrl());
-                setLog("제발 : "+i+"   "+lastDataSet.get(i).isMaster());
-
-                if(lastDataSet.get(i).getName()!=null){
-                    setLog("텍스트 생겨라");
-                    TextView addText = new TextView(ViewProjectActivity.this);
-                    setLog("텍스트 생겨라2");
-                    addText.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    setLog("텍스트 생겨라3");
-                    addText.setBackgroundColor(Color.parseColor("#00FFFFFF"));
-                    setLog("텍스트 생겨라4");
-                    addText.setPadding(20, 10, 10, 10);
-                    addText.setTextColor(Color.parseColor("#000000"));
-                    addText.setTextSize(30);
-                    addText.setText(lastDataSet.get(i).getName());
-                    setLog("텍스트 생겨라5");
-//                    Message messageAddText = handler.obtainMessage();
-//                    messageAddText.what = ADD_TEXTVIEW;
-//                    handler.sendMessage(messageAddText);
-                    linearContent.addView(addText);
-                    setLog("텍스트 생겨라6");
-                }else {
-                    setLog("이미지 생겨라");
-                    TextView addText = new TextView(ViewProjectActivity.this);
-                    setLog("이미지 생겨라2");
-                    addText.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    setLog("이미지 생겨라3");
-                    addText.setBackgroundColor(Color.parseColor("#00FFFFFF"));
-                    addText.setPadding(20, 10, 10, 10);
-                    addText.setTextColor(Color.parseColor("#000000"));
-                    addText.setTextSize(30);
-                    addText.setText("뛰뛰뛰뛰뛰뛰");
-                    setLog("이미지 생겨라4");
-//                    Message messageAddText = handler.obtainMessage();
-//                    messageAddText.what = ADD_TEXTVIEW;
-//                    handler.sendMessage(messageAddText);
-                    linearContent.addView(addText);
-                    setLog("이미지 생겨라5");
-                }
-
-
-//                LinearLayout linearContent = findViewById(R.id.viewproject_linear_content);
-//                TextView topTV1 = new TextView(ViewProjectActivity.this);
-//                topTV1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                topTV1.setBackgroundColor(Color.parseColor("#00FFFFFF"));
-//                topTV1.setPadding(20, 10, 10, 10);
-//                topTV1.setTextColor(Color.parseColor("#FF7200"));
-//                topTV1.setTextSize(13);
-//                topTV1.setText("텍스트");
-//                linearContent.addView(topTV1);
-
-
-            }
-
-
+            Message messageTest = handler.obtainMessage();
+            messageTest.what = TTT;
+            handler.sendMessage(messageTest);
+            setLog("서버에서 메세지보냄callback");
 
         }
     };
+    private final Callback likeCallback = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            setLog( "콜백오류:"+e.getMessage());
+        }
+        @Override
+        public void onResponse(Call call, okhttp3.Response response) throws IOException {
+            String requestlike = response.body().string();
+            setLog("서버에서 응답한 BodylikeCallback:"+requestlike);
+        }
+    };
+    private final Callback likeListCallback = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            setLog( "콜백오류:"+e.getMessage());
+        }
+        @Override
+        public void onResponse(Call call, okhttp3.Response response) throws IOException {
+            String requestLike = response.body().string();
+            setLog("서버에서 응답한 BodylikeListCallback:"+requestBody);
+
+            Message messageLikeList = handler.obtainMessage();
+            messageLikeList.what = GET_LIKE_LIST;
+            messageLikeList.obj = requestLike;
+            handler.sendMessage(messageLikeList);
+            setLog("서버에서 메세지보냄likeListCallback");
+
+        }
+    };
+
 }

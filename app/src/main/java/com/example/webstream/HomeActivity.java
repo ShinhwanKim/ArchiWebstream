@@ -47,7 +47,7 @@ public class HomeActivity extends AppCompatActivity
     public static final int CHANGE_PROFILE = 300;
 
 
-    String loginedUser;
+    public static String loginedUser;
     NavigationView navigationView;
     private HttpConnection httpConn = HttpConnection.getInstance();
 

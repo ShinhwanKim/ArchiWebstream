@@ -12,6 +12,17 @@ public class DataList_project_view {
     int position;
     String imgUrl;
     boolean master;
+    int orientation;
+
+    public int getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(int orientation) {
+        this.orientation = orientation;
+    }
+
+
 
     public String getName() {
         return name;

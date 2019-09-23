@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/userchannel_bottom_navigation_projectlist"
+        android:icon="@drawable/ic_subject_black_24dp"
+        android:title="프로젝트"/>
+
+
+    <item
+        android:id="@+id/userchannel_bottom_navigation_recordlist"
+        android:icon="@drawable/ic_live_tv_black_24dp"
+        android:title="답사" />
+
+</menu>

@@ -6,17 +6,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,7 +39,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import adapter.Adapter_projectList;
+import dataList.DataList_liveList;
+import dataList.DataList_project_list;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -47,6 +59,17 @@ public class ProjectListActivity extends AppCompatActivity
     public static final int CHANGE_USERID = 100;
     public static final int CHANGE_USERNICKNAME = 200;
     public static final int CHANGE_PROFILE = 300;
+    public static final int SET_MATERIMAGE = 400;
+    public static final int REFRESH = 500;
+    public static final String SORT_VIEW = "SORT_VIEW";
+    public static final String SORT_LIKE = "SORT_LIKE";
+    public static final String SORT_DATE_UP = "SORT_DATE_UP";
+    public static final String SORT_DATE_DOWN = "SORT_DATE_DOWN";
+    public static final String SORT_MYLIKE = "SORT_MYLIKE";
+
+
+
+
 
     NavigationView navigationView;
     View header;
@@ -56,6 +79,11 @@ public class ProjectListActivity extends AppCompatActivity
     TextView txtHeaderId;
     TextView txtHeaderNickname;
     ImageView imgProfile;
+    Button btnFilter;
+    int filterResult;
+    int getStartIndex;
+    String currentFilter;
+    boolean filterChangeIs;
 
     String getNickname;
     public static String loginedUser;
@@ -66,6 +94,10 @@ public class ProjectListActivity extends AppCompatActivity
     boolean autoLogin;
 
     private HttpConnection httpConn = HttpConnection.getInstance();
+
+    private ArrayList<DataList_project_list> dataListProject;
+    private Adapter_projectList adapter_projectList;
+    private RecyclerView recyProjectList;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -88,6 +120,7 @@ public class ProjectListActivity extends AppCompatActivity
                     Intent intent = new Intent(ProjectListActivity.this,ProjectWriteActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                     startActivity(intent);
+                    //finish();
                     return true;
             }
             return false;
@@ -103,7 +136,11 @@ public class ProjectListActivity extends AppCompatActivity
         bottomNavigationView = findViewById(R.id.projectlist_bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+
+
         Toolbar toolbar = findViewById(R.id.toolbar_projectlist);
+
+        btnFilter = findViewById(R.id.projectlist_button_filter);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout_projectlist);
         navigationView = findViewById(R.id.nav_view_projectlist);
@@ -120,6 +157,109 @@ public class ProjectListActivity extends AppCompatActivity
         menuItemMyprofile = menu.findItem(R.id.nav_myprofile);
 
         activity = this;
+
+        btnFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final String [] items = {"최신 순","오래된 순","조회수 높은 순","좋아요 높은 순","내가 좋아요 한 게시물만"};
+                AlertDialog.Builder builder = new AlertDialog.Builder(ProjectListActivity.this);
+                builder.setTitle("필터 및 정렬");
+                builder.setSingleChoiceItems(items, filterResult, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        filterResult = which;
+                        switch (which){
+                            case 0:
+                                currentFilter = SORT_DATE_DOWN;
+                                break;
+                            case 1:
+                                currentFilter = SORT_DATE_UP;
+                                break;
+                            case 2:
+                                currentFilter = SORT_VIEW;
+                                break;
+                            case 3:
+                                currentFilter = SORT_LIKE;
+                                break;
+                            case 4:
+                                currentFilter = SORT_MYLIKE;
+                                break;
+                        }
+
+                    }
+                })
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        setLog("보쟈 : "+filterResult);
+                        getStartIndex = 0;
+                        dataListProject.clear();
+                        adapter_projectList.notifyDataSetChanged();
+                        filterChangeIs = true;
+                        GetProjectList(currentFilter,getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+                    }
+                })
+                .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        filterResult = 0;
+                        setLog("보쟈2 : "+filterResult);
+                    }
+                });
+                builder.create();
+                builder.show();
+            }
+        });
+
+
+
+        recyProjectList = findViewById(R.id.projectlist_recycler);
+        recyProjectList.setLayoutManager(new LinearLayoutManager(ProjectListActivity.this));
+        dataListProject = new ArrayList<>();
+
+        adapter_projectList = new Adapter_projectList(ProjectListActivity.this,dataListProject);
+        recyProjectList.setAdapter(adapter_projectList);
+        //recyProjectList.getRecycledViewPool().setMaxRecycledViews();
+
+        recyProjectList.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(),recyProjectList, new ProjectListActivity.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                //선택한 아이템의 stream 데이터를 ViewStreamActivity로 넘겨준다.
+
+                DataList_project_list dataListProjectList = dataListProject.get(position);
+
+                setLog("넘기는 넘버 : "+dataListProjectList.getNumber());
+                Intent intent = new Intent(ProjectListActivity.this, ViewProjectActivity.class);
+                intent.putExtra("postNumber",String.valueOf(dataListProjectList.getNumber()));
+                startActivity(intent);
+                //finish();
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
+        recyProjectList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                setLog("스크롤 중");
+                super.onScrolled(recyclerView, dx, dy);
+
+                int lastVisibleItemPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastCompletelyVisibleItemPosition();
+                int itemTotalCount = recyclerView.getAdapter().getItemCount();
+                setLog("스크롤 : "+lastVisibleItemPosition);
+                setLog("스크롤2 : "+itemTotalCount);
+                if(lastVisibleItemPosition == itemTotalCount-1){
+                    setLog("마지막 도착");
+                    setLog("데이터 불러오기스크롤 : "+getStartIndex);
+                    if(!filterChangeIs){
+                        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+                    }
+
+                }
+            }
+        });
 
         handler = new Handler(){
             @Override
@@ -149,6 +289,9 @@ public class ProjectListActivity extends AppCompatActivity
                         }
 
                         break;
+                    case REFRESH:
+                        adapter_projectList.notifyItemChanged(dataListProject.size());
+                        break;
 
 
 
@@ -168,6 +311,11 @@ public class ProjectListActivity extends AppCompatActivity
         super.onResume();
         setLog("onResume");
         //바텀 네비게이션 뷰 선택
+        filterResult = 0;
+        getStartIndex = 0;
+        currentFilter = SORT_DATE_DOWN;
+        filterChangeIs = false;
+
         bottomNavigationView.setSelectedItemId(R.id.bottom_navigation_projectlist);
 
         SharedPreferences spCurrentUser = getSharedPreferences("currentUser",MODE_PRIVATE);
@@ -189,6 +337,10 @@ public class ProjectListActivity extends AppCompatActivity
             sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php");
 
         }
+        //dataListProject.clear();
+        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+        setLog("데이터 불러오기 최초 : "+getStartIndex);
+
     }
 
     private void sendData(final String param, final String url) {
@@ -196,6 +348,15 @@ public class ProjectListActivity extends AppCompatActivity
         new Thread() {
             public void run() {
                 httpConn.requestGetUserData(param, callback, url);
+            }
+        }.start();
+
+    }
+    private void GetProjectList(final String param, final int param2, final String currentUser,final String url) {
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        new Thread() {
+            public void run() {
+                httpConn.requestProjectList(param, param2,currentUser,callbackForProjectList, url);
             }
         }.start();
 
@@ -250,6 +411,116 @@ public class ProjectListActivity extends AppCompatActivity
 
             } catch (JSONException e) {
                 e.printStackTrace();
+            }
+
+
+        }
+    };
+
+    private final Callback callbackForProjectList = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            setLog( "콜백오류:"+e.getMessage());
+        }
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            String body = response.body().string();
+            getStartIndex = getStartIndex + 10;
+            filterChangeIs = false;
+            setLog("서버에서 응답한 callbackForProjectList:"+body);
+            setLog("파싱 추적");
+            ArrayList<DataList_project_list> dataListSet = new ArrayList<>();
+            try {
+                JSONObject getUserData = new JSONObject(body);
+
+                setLog("파싱 추적1");
+                JSONArray totalData = new JSONArray(getUserData.getString("projectList"));
+                setLog("파싱 추적2");
+                for(int i=0;i<totalData.length();i++){
+                    setLog("파싱 추적3");
+                    JSONObject projectDataSet = totalData.getJSONObject(i);
+                    setLog("파싱 추적4");
+                    String postNumber = projectDataSet.getString("number");
+                    setLog("파싱 추적5");
+                    String postTitle = projectDataSet.getString("title");
+                    setLog("파싱 추적6");
+                    String postOwner = projectDataSet.getString("owner");
+                    setLog("파싱 추적7");
+                    String postLocation = projectDataSet.getString("location");
+                    setLog("파싱 추적8");
+                    String postWrittenDate = projectDataSet.getString("writtenDate");
+                    String postView = projectDataSet.getString("view");
+                    String postLike = projectDataSet.getString("like");
+                    setLog("파싱 추적9");
+                    setLog("파싱 데이터 postNumber : "+postNumber);
+                    setLog("파싱 데이터 postTitle : "+postTitle);
+                    setLog("파싱 데이터 postOwner : "+postOwner);
+                    setLog("파싱 데이터 postLocation : "+postLocation);
+                    setLog("파싱 데이터 postWrittenDate : "+postWrittenDate);
+                    JSONArray dummyContent = new JSONArray(projectDataSet.getString("content"));
+                    DataList_project_list dataSet = new DataList_project_list();
+                    dataSet.setNumber(Integer.parseInt(postNumber));
+                    setLog("파싱 결과물 : "+dataSet.getNumber());
+                    dataSet.setTitle(postTitle);
+                    setLog("파싱 결과물 : "+dataSet.getTitle());
+                    dataSet.setOwner(postOwner);
+                    setLog("파싱 결과물 : "+dataSet.getOwner());
+                    dataSet.setLocation(postLocation);
+                    setLog("파싱 결과물 : "+dataSet.getLocation());
+                    dataSet.setWrittenDate(postWrittenDate);
+                    setLog("파싱 결과물 : "+dataSet.getWrittenDate());
+                    dataSet.setView(Integer.parseInt(postView));
+                    setLog("파싱 결과물 : "+dataSet.getView());
+                    dataSet.setLike(Integer.parseInt(postLike));
+                    setLog("파싱 결과물 : "+dataSet.getLike());
+                    for(int k=0;k<dummyContent.length();k++){
+                        String isMaster = null;
+                        JSONObject jsonContent = dummyContent.getJSONObject(k);
+                        try{
+                            isMaster = jsonContent.getString("isMaster");
+                        }catch (Exception e){
+
+                        }
+                        if(Boolean.valueOf(isMaster)){
+                            String masterImgPath = jsonContent.getString("imagePath");
+                            String masterImgOrientation = jsonContent.getString("orientation");
+                            setLog("대표이미지 : "+masterImgPath);
+
+                            dataSet.setImage(masterImgPath);
+                            dataSet.setImageOrientation(masterImgOrientation);
+                            setLog("파싱 결과물 : "+dataSet.getImage());
+//                            Message messageMasterImg = handler.obtainMessage();
+//                            messageMasterImg.what = SET_MATERIMAGE;
+//                            messageMasterImg.obj = masterImgPath;
+//                            handler.sendMessage(messageMasterImg);
+
+                        }
+                    }
+
+                    setLog("파싱 결과물 : "+dataSet.getTitle());
+                    setLog("파싱 결과물 : "+dataSet.getOwner());
+                    setLog("파싱 결과물 : "+dataSet.getLocation());
+                    setLog("파싱 결과물 : "+dataSet.getWrittenDate());
+                    setLog("파싱 결과물 : "+dataSet.getImage());
+                    //dataListProject.add(dataSet);
+
+                    dataListSet.add(dataSet);
+
+
+                    setLog("파싱 데이터 추가 결과물 : "+dataListProject);
+
+
+
+                    //adapter_projectList.notifyDataSetChanged();
+                }
+                //dataListProject.clear();
+                dataListProject.addAll(dataListSet);
+                Message messageRefresh = handler.obtainMessage();
+                messageRefresh.what = REFRESH;
+                handler.sendMessage(messageRefresh);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                setLog("파싱 추적10");
             }
 
 
@@ -326,15 +597,65 @@ public class ProjectListActivity extends AppCompatActivity
 
     }
 
+    //recyclerview 터치시 이벤트 발생하는 기능 사용하려면 이 class가 있어야됨, 정확한 이유는 모름, 나중에
+    public interface ClickListener {
+        void onClick(View view, int position);
 
+        void onLongClick(View view, int position);
+    }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout_livelist);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+    //recyclerview 터치시 이벤트 발생하는 기능 사용하려면 이 class가 있어야됨, 정확한 이유는 모름, 나중에
+    public static class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
+
+        private GestureDetector gestureDetector;
+        private ProjectListActivity.ClickListener clickListener;
+
+        public RecyclerTouchListener(Context context, final RecyclerView recyclerView, final ProjectListActivity
+                .ClickListener clickListener) {
+            this.clickListener = clickListener;
+            gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                    if (child != null && clickListener != null) {
+                        clickListener.onLongClick(child, recyclerView.getChildAdapterPosition(child));
+                    }
+                }
+            });
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            View child = rv.findChildViewUnder(e.getX(), e.getY());
+            if (child != null && clickListener != null && gestureDetector.onTouchEvent(e)) {
+                clickListener.onClick(child, rv.getChildAdapterPosition(child));
+            }
+            return false;
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
         }
     }
+
+
+
+//    @Override
+//    public void onBackPressed() {
+//        DrawerLayout drawer = findViewById(R.id.drawer_layout_livelist);
+//        if (drawer.isDrawerOpen(GravityCompat.START)) {
+//            drawer.closeDrawer(GravityCompat.START);
+//        } else {
+//            super.onBackPressed();
+//        }
+//    }
 }

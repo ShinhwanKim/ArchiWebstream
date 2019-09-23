@@ -3,6 +3,7 @@ package adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +80,7 @@ public class Adapter_projectView extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, final int position) {
         setLog("추적 1");
         if(datalist.get(position).getName()==null){
-            setLog("추적 2");
+            setLog("추적 2 : "+datalist.get(position).getPosition());
             Thread mThread = new Thread(){
                 @Override
                 public void run() {
@@ -92,6 +93,14 @@ public class Adapter_projectView extends RecyclerView.Adapter<RecyclerView.ViewH
                         conn.connect();
                         InputStream is = conn.getInputStream();
                         bitmap = BitmapFactory.decodeStream(is);
+                        if(datalist.get(position).getPosition()==6){
+                            Matrix rotateMatrix = new Matrix();
+                            setLog("으디보자4");
+                            rotateMatrix.postRotate(90);
+                            setLog("으디보자5");
+                            bitmap = Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),rotateMatrix,false);
+                            setLog("으디보자6");
+                        }
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
                     } catch (IOException e) {

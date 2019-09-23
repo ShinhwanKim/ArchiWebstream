@@ -89,6 +89,7 @@ public class ProjectWriteActivity extends AppCompatActivity
     JSONObject jsonContent;
 
     Bitmap rotatedImg;
+    int isLastUpload;
 
 
 
@@ -105,7 +106,7 @@ public class ProjectWriteActivity extends AppCompatActivity
         etxtOwner = findViewById(R.id.ProjectWirteActivity_edittext_owner);
         etxtLocation = findViewById(R.id.ProjectWirteActivity_edittext_location);
         txtContent = findViewById(R.id.ProjectWirteActivity_textview_content);
-
+        isLastUpload = 0;
         //------------------------------뷰 클릭 리스너 정의----------------------------
         View.OnClickListener onClickListener = new View.OnClickListener(){
             @Override
@@ -115,6 +116,9 @@ public class ProjectWriteActivity extends AppCompatActivity
 //취소 버튼. 클릭 시 현재 액티비티 종료
                     case R.id.ProjectWirteActivity_button_cancel:
                         setLog("취소버튼");
+                        Intent intent = new Intent(ProjectWriteActivity.this,ViewProjectActivity.class);
+                        startActivity(intent);
+                        finish();
                         break;
 
 //이미지 추가버튼. 클릭 시 TedBottomPicker실행하여 선택한 이미지 url 가져온다.
@@ -145,6 +149,7 @@ public class ProjectWriteActivity extends AppCompatActivity
                                             DataList_project_write ImageDataList = new DataList_project_write();
                                             //String path = "/storage/emulated/0/Pictures/JPEG_20190917103957_8806806323473041896.jpg";
                                             ImageDataList.setImgUri(uriList.get(i));
+                                            setLog("현재 대표사진 여부 : "+masterIs);
                                             if(i == 0 && masterIs == false){
                                                 ImageDataList.setMaster(true);
                                                 masterIs = true;
@@ -197,6 +202,17 @@ public class ProjectWriteActivity extends AppCompatActivity
                                 jsonPost.put("writter",ProjectListActivity.loginedUser);
                             } catch (JSONException e) {
                                 e.printStackTrace();
+                            }
+                            Boolean imgOn = false;
+                            for(int i=0;i<writeDataList.size();i++){
+                                if(writeDataList.get(i).getImgUri()==null){
+                                    imgOn = false;
+                                }else {
+                                    imgOn = true;
+                                }
+                            }
+                            if(imgOn==false){
+                                Toast.makeText(ProjectWriteActivity.this, "한 장 이상의 이미지를 추가해야 됩니다.", Toast.LENGTH_SHORT).show();
                             }
 
                             //게시글 내용이 될 JSONArray
@@ -270,7 +286,8 @@ public class ProjectWriteActivity extends AppCompatActivity
                                                     writeDataList.get(i).getImgUri().getPath(),
                                                     String.valueOf(i),
                                                     String.valueOf(writeDataList.get(i).isMaster()),
-                                                    lastItem);
+                                                    lastItem,
+                                                    String.valueOf(orientation));
                                         }
 
                                         Cursor cursor = getContentResolver().query(writeDataList.get(i).getImgUri(), filePathColumn, null, null, null);
@@ -298,6 +315,7 @@ public class ProjectWriteActivity extends AppCompatActivity
                                     else {
                                         jsonContent.put("position",i);
                                         jsonContent.put("text",writeDataList.get(i).getName());
+                                        isLastUpload++;
                                         contentArray.put(jsonContent);
                                     }
 
@@ -412,6 +430,7 @@ public class ProjectWriteActivity extends AppCompatActivity
                     jsonImage.put("position",strings[2]);
                     jsonImage.put("imagePath",imgPath);
                     jsonImage.put("isMaster",strings[3]);
+                    jsonImage.put("orientation",strings[5]);
                     contentArray.put(jsonImage);
 
 
@@ -431,15 +450,26 @@ public class ProjectWriteActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
+            isLastUpload++;
+            setLog("마지막이다 확인 : "+isLastUpload);
             if(progressDialog != null){
                 progressDialog.dismiss();
             }
-            if(isLast){
+            if(isLastUpload == writeDataList.size()){
                 setLog("마지막이다");
 
                 setLog("결과물" + jsonPost);
                 setLog("결과물2" + contentArray);
                 sendData(jsonPost,contentArray);
+
+
+
+            }else {
+                //Toast.makeText(ProjectWriteActivity.this, "한 장 이상의 이미지를 추가해주세요.", Toast.LENGTH_SHORT).show();
+            }
+            if(isLast){
+
+
 
 //                try {
 //                    jsonPost.put("postContent",contentArray);
@@ -505,6 +535,13 @@ public class ProjectWriteActivity extends AppCompatActivity
 //        }
 //    }
 
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        masterIs = false;
+    }
+
     //게시글 정보 저장 하는 메서드 인자값[0]은 게시글 기본 정보(제목, 작성자, 위치, 소유자등) 인자값[1]은 게시글 내용.
     private void sendData(final JSONObject jsonContent, final JSONArray jsonArrayContent) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
@@ -526,6 +563,12 @@ public class ProjectWriteActivity extends AppCompatActivity
         public void onResponse(Call call, okhttp3.Response response) throws IOException {
             String body = response.body().string();
             setLog("서버에서 응답한 Body:"+body);
+
+            Intent intent = new Intent(ProjectWriteActivity.this,ViewProjectActivity.class);
+            intent.putExtra("postNumber",body);
+            setLog("보내는 포스트 넘버 : "+body);
+            startActivity(intent);
+            finish();
 
 
         }

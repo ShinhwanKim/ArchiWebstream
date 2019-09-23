@@ -366,6 +366,16 @@ public class Adapter_projectWriteList extends RecyclerView.Adapter<RecyclerView.
                         }
                         if(ProjectWriteActivity.writeDataList.size()==0){
                             ProjectWriteActivity.masterIs = false;
+                        }else {
+                            for(int i=0;i<ProjectWriteActivity.writeDataList.size();i++){
+                                if(ProjectWriteActivity.writeDataList.get(i).getImgUri()!=null){
+                                    ProjectWriteActivity.writeDataList.get(i).setMaster(true);
+                                    ProjectWriteActivity.adapter_projectWrite.notifyItemChanged(ProjectWriteActivity.writeDataList.size());
+                                    break;
+                                }
+
+                            }
+
                         }
                         break;
                 }
