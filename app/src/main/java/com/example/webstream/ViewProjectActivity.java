@@ -563,6 +563,7 @@ public class ViewProjectActivity extends AppCompatActivity
                 }else {
                     Intent intent = new Intent(ViewProjectActivity.this, UserChannelProjectActivity.class);
                     intent.putExtra("writter",txtWritter.getText().toString());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
                 }
 

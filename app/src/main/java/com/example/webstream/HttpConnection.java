@@ -1,5 +1,7 @@
 package com.example.webstream;
 
+import android.util.Log;
+
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -260,5 +262,47 @@ public class HttpConnection {
                 .build();
         client.newCall(request).enqueue(callback);
     }
-
+    public void requestRecordListChannel(String param,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("targetId", param)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestBroadListChannel(String param,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("targetId", param)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestSendSubscribe(String writter,String userId,String flag,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("writter", writter)
+                .add("userId", userId)
+                .add("flag", flag)
+                .build();
+        Log.e("TAG","http : "+flag);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestGetSubscriberList(String userId,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("userId", userId)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
 }

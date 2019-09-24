@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -87,11 +88,12 @@ public class ProjectListActivity extends AppCompatActivity
 
     String getNickname;
     public static String loginedUser;
+    boolean autoLogin;
 
     BottomNavigationView bottomNavigationView;
 
     public static Activity activity = null;
-    boolean autoLogin;
+
 
     private HttpConnection httpConn = HttpConnection.getInstance();
 
@@ -109,17 +111,17 @@ public class ProjectListActivity extends AppCompatActivity
                     return true;
                 case R.id.bottom_navigation_project_subscribe:
                     setLog("바텀 네비게이션 : 구독");
-//                    Intent intent = new Intent(ProjectListActivity.this,VodListActivity.class);
-//                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-//                    startActivity(intent);
-//                    finish();
+                    Intent intentSubscribe = new Intent(ProjectListActivity.this,ProjectSubscribeActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intentSubscribe.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                    startActivity(intentSubscribe);
+                    finish();
                     return true;
                 case R.id.bottom_navigation_write:
                     setLog("바텀 네비게이션 : 글쓰기");
-                    Intent intent = new Intent(ProjectListActivity.this,ProjectWriteActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                    startActivity(intent);
+                    Intent intentWrite = new Intent(ProjectListActivity.this,ProjectWriteActivity.class);
+                    intentWrite.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                    startActivity(intentWrite);
                     //finish();
                     return true;
             }
@@ -132,6 +134,8 @@ public class ProjectListActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setLog("onCreate");
         setContentView(R.layout.activity_project_list);
+
+
 
         bottomNavigationView = findViewById(R.id.projectlist_bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
