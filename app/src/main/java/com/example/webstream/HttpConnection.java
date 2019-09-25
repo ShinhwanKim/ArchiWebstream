@@ -305,4 +305,41 @@ public class HttpConnection {
                 .build();
         client.newCall(request).enqueue(callback);
     }
+    public void requestSubscriberProjectList(String targetId,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("targetId", targetId)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestHomeProjectList(Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestHomeLiveList(Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+    public void requestHomeRecordList(Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
 }

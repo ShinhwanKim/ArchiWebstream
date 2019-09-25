@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="11dp"
+    android:layout_marginEnd="11dp">
 
     <ImageView
         android:id="@+id/item_list_subscribelist_image_profile"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:adjustViewBounds="true"
+
+        android:layout_gravity="center"
         android:src="@drawable/loadingimag"/>
 
     <TextView
@@ -15,7 +19,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:textSize="16dp"
-        android:text="아이디"/>
+        android:textColor="@color/colorWhite"
+        android:textSize="14dp"
+        android:text="sinhwan0211"/>
 
 </LinearLayout>

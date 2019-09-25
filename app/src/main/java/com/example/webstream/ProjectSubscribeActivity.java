@@ -6,17 +6,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +38,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import adapter.Adapter_projectList;
+import adapter.Adapter_subscribelist;
+import dataList.DataList_liveList;
 import dataList.DataList_project_list;
+import dataList.DataList_subscriber_list;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -48,6 +58,10 @@ public class ProjectSubscribeActivity extends AppCompatActivity
     public static final int CHANGE_USERID = 100;
     public static final int CHANGE_USERNICKNAME = 200;
     public static final int CHANGE_PROFILE = 300;
+    public static final int REFRESH = 400;
+    public static final int PROJECT_LIST_REFRESH = 500;
+
+
 
     BottomNavigationView bottomNavigationView;
 
@@ -65,6 +79,16 @@ public class ProjectSubscribeActivity extends AppCompatActivity
     boolean autoLogin;
 
     private HttpConnection httpConn = HttpConnection.getInstance();
+
+    RecyclerView recySubscriberLisst;
+    ArrayList<DataList_subscriber_list>  dataList_subscriber_list;
+    Adapter_subscribelist adapter_subscribelist;
+
+    RecyclerView recyBoardList;
+    private ArrayList<DataList_project_list> dataListProject;
+    private Adapter_projectList adapter_projectList;
+
+
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -120,6 +144,62 @@ public class ProjectSubscribeActivity extends AppCompatActivity
         Menu menu = navigationView.getMenu();
         menuItemMyprofile = menu.findItem(R.id.nav_myprofile);
 
+        recySubscriberLisst = findViewById(R.id.project_subscribe_recycler_subscriber);
+        recySubscriberLisst.setLayoutManager(new LinearLayoutManager(ProjectSubscribeActivity.this, LinearLayout.HORIZONTAL,false));
+        dataList_subscriber_list = new ArrayList<>();
+
+        adapter_subscribelist = new Adapter_subscribelist(ProjectSubscribeActivity.this,dataList_subscriber_list);
+        recySubscriberLisst.setAdapter(adapter_subscribelist);
+
+        recyBoardList = findViewById(R.id.project_subscribe_recycler_board);
+        recyBoardList.setLayoutManager(new LinearLayoutManager(ProjectSubscribeActivity.this));
+        dataListProject = new ArrayList<>();
+
+        adapter_projectList = new Adapter_projectList(ProjectSubscribeActivity.this,dataListProject);
+        recyBoardList.setAdapter(adapter_projectList);
+
+        recySubscriberLisst.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(),recySubscriberLisst, new ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                DataList_subscriber_list dataSet = dataList_subscriber_list.get(position);
+
+                Intent intent = new Intent(ProjectSubscribeActivity.this,UserChannelProjectActivity.class);
+                intent.putExtra("writter",dataSet.getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
+
+        recyBoardList.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recyBoardList, new ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                DataList_project_list dataSet = dataListProject.get(position);
+                Intent intent = new Intent(ProjectSubscribeActivity.this, ViewProjectActivity.class);
+                intent.putExtra("postNumber",String.valueOf(dataSet.getNumber()));
+                startActivity(intent);
+
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
+
+//        for(int i=0;i<10;i++){
+//            DataList_subscriber_list dataSet = new DataList_subscriber_list();
+//            dataSet.setId("아룡하세요");
+//            dataList_subscriber_list.add(dataSet);
+//            setLog("들어갔나 : "+i);
+//        }
+//        adapter_subscribelist.notifyDataSetChanged();
+        //adapter_subscribelist.notifyItemChanged(dataList_subscriber_list.size());
+
+
         handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
@@ -148,12 +228,16 @@ public class ProjectSubscribeActivity extends AppCompatActivity
                         }
 
                         break;
-
-
-
+                    case REFRESH:
+                        adapter_subscribelist.notifyItemChanged(dataList_subscriber_list.size());
+                        break;
+                    case PROJECT_LIST_REFRESH:
+                        adapter_projectList.notifyItemChanged(dataListProject.size());
                 }
             }
         };
+
+
     }
 
     @Override
@@ -182,7 +266,10 @@ public class ProjectSubscribeActivity extends AppCompatActivity
             sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php");
 
         }
+        dataList_subscriber_list.clear();
         GetSubscriberList();
+
+        GetProjectList();
         //dataListProject.clear();
 //        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
 //        setLog("데이터 불러오기 최초 : "+getStartIndex);
@@ -274,127 +361,125 @@ public class ProjectSubscribeActivity extends AppCompatActivity
             String body = response.body().string();
             setLog("서버에서 응답한 GetSubscriberList:"+body);
 
+            try {
+                JSONObject getSubscriberData = new JSONObject(body);
+                JSONArray totalData = new JSONArray(getSubscriberData.getString("subscriberList"));
+                for(int i=0;i<totalData.length();i++){
+                    JSONObject projectDataSet = totalData.getJSONObject(i);
+                    String subscriberId = projectDataSet.getString("id");
+                    String subscriberProfile = projectDataSet.getString("profileRoute");
+                    setLog("파싱 결과1 : "+subscriberId);
+                    setLog("파싱 결과2 : "+subscriberProfile);
+
+                    DataList_subscriber_list dataSet = new DataList_subscriber_list();
+                    dataSet.setId(subscriberId);
+                    dataSet.setProfile(subscriberProfile);
+                    dataList_subscriber_list.add(dataSet);
+
+                }
+
+                Message messageRefresh = handler.obtainMessage();
+                messageRefresh.what = REFRESH;
+                handler.sendMessage(messageRefresh);
+
+                //adapter_subscribelist.notifyItemChanged(dataList_subscriber_list.size());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     };
 
-//    private void GetProjectList(final String param, final int param2, final String currentUser,final String url) {
-//        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-//        new Thread() {
-//            public void run() {
-//                httpConn.requestProjectList(param, param2,currentUser,callbackForProjectList, url);
-//            }
-//        }.start();
-//
-//    }
-//    private final Callback callbackForProjectList = new Callback() {
-//        @Override
-//        public void onFailure(Call call, IOException e) {
-//            setLog( "콜백오류:"+e.getMessage());
-//        }
-//        @Override
-//        public void onResponse(Call call, Response response) throws IOException {
-//            String body = response.body().string();
-//            getStartIndex = getStartIndex + 10;
-//            filterChangeIs = false;
-//            setLog("서버에서 응답한 callbackForProjectList:"+body);
-//            setLog("파싱 추적");
-//            ArrayList<DataList_project_list> dataListSet = new ArrayList<>();
-//            try {
-//                JSONObject getUserData = new JSONObject(body);
-//
-//                setLog("파싱 추적1");
-//                JSONArray totalData = new JSONArray(getUserData.getString("projectList"));
-//                setLog("파싱 추적2");
-//                for(int i=0;i<totalData.length();i++){
-//                    setLog("파싱 추적3");
-//                    JSONObject projectDataSet = totalData.getJSONObject(i);
-//                    setLog("파싱 추적4");
-//                    String postNumber = projectDataSet.getString("number");
-//                    setLog("파싱 추적5");
-//                    String postTitle = projectDataSet.getString("title");
-//                    setLog("파싱 추적6");
-//                    String postOwner = projectDataSet.getString("owner");
-//                    setLog("파싱 추적7");
-//                    String postLocation = projectDataSet.getString("location");
-//                    setLog("파싱 추적8");
-//                    String postWrittenDate = projectDataSet.getString("writtenDate");
-//                    String postView = projectDataSet.getString("view");
-//                    String postLike = projectDataSet.getString("like");
-//                    setLog("파싱 추적9");
-//                    setLog("파싱 데이터 postNumber : "+postNumber);
-//                    setLog("파싱 데이터 postTitle : "+postTitle);
-//                    setLog("파싱 데이터 postOwner : "+postOwner);
-//                    setLog("파싱 데이터 postLocation : "+postLocation);
-//                    setLog("파싱 데이터 postWrittenDate : "+postWrittenDate);
-//                    JSONArray dummyContent = new JSONArray(projectDataSet.getString("content"));
-//                    DataList_project_list dataSet = new DataList_project_list();
-//                    dataSet.setNumber(Integer.parseInt(postNumber));
-//                    setLog("파싱 결과물 : "+dataSet.getNumber());
-//                    dataSet.setTitle(postTitle);
-//                    setLog("파싱 결과물 : "+dataSet.getTitle());
-//                    dataSet.setOwner(postOwner);
-//                    setLog("파싱 결과물 : "+dataSet.getOwner());
-//                    dataSet.setLocation(postLocation);
-//                    setLog("파싱 결과물 : "+dataSet.getLocation());
-//                    dataSet.setWrittenDate(postWrittenDate);
-//                    setLog("파싱 결과물 : "+dataSet.getWrittenDate());
-//                    dataSet.setView(Integer.parseInt(postView));
-//                    setLog("파싱 결과물 : "+dataSet.getView());
-//                    dataSet.setLike(Integer.parseInt(postLike));
-//                    setLog("파싱 결과물 : "+dataSet.getLike());
-//                    for(int k=0;k<dummyContent.length();k++){
-//                        String isMaster = null;
-//                        JSONObject jsonContent = dummyContent.getJSONObject(k);
-//                        try{
-//                            isMaster = jsonContent.getString("isMaster");
-//                        }catch (Exception e){
-//
-//                        }
-//                        if(Boolean.valueOf(isMaster)){
-//                            String masterImgPath = jsonContent.getString("imagePath");
-//                            String masterImgOrientation = jsonContent.getString("orientation");
-//                            setLog("대표이미지 : "+masterImgPath);
-//
-//                            dataSet.setImage(masterImgPath);
-//                            dataSet.setImageOrientation(masterImgOrientation);
-//                            setLog("파싱 결과물 : "+dataSet.getImage());
-////                            Message messageMasterImg = handler.obtainMessage();
-////                            messageMasterImg.what = SET_MATERIMAGE;
-////                            messageMasterImg.obj = masterImgPath;
-////                            handler.sendMessage(messageMasterImg);
-//
-//                        }
-//                    }
-//
-//                    setLog("파싱 결과물 : "+dataSet.getTitle());
-//                    setLog("파싱 결과물 : "+dataSet.getOwner());
-//                    setLog("파싱 결과물 : "+dataSet.getLocation());
-//                    setLog("파싱 결과물 : "+dataSet.getWrittenDate());
-//                    setLog("파싱 결과물 : "+dataSet.getImage());
-//                    //dataListProject.add(dataSet);
-//
-//                    dataListSet.add(dataSet);
-//
-//
-//                    setLog("파싱 데이터 추가 결과물 : "+dataListProject);
-//
-//
-//
-//                    //adapter_projectList.notifyDataSetChanged();
-//                }
-//                //dataListProject.clear();
-//                dataListProject.addAll(dataListSet);
-//                Message messageRefresh = handler.obtainMessage();
-//                messageRefresh.what = REFRESH;
-//                handler.sendMessage(messageRefresh);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//                setLog("파싱 추적10");
-//            }
-//
-//
-//        }
-//    };
+    private void GetProjectList() {
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        final String url = "http://13.124.223.128/subscribe/getSubscriberProjectList.php";
+        new Thread() {
+            public void run() {
+                httpConn.requestSubscriberProjectList(loginedUser,callbackForProjectList, url);
+            }
+        }.start();
+
+    }
+    private final Callback callbackForProjectList = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            setLog( "콜백오류:"+e.getMessage());
+        }
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            String body = response.body().string();
+
+            setLog("서버에서 응답한 callbackForProjectList:" + body);
+            setLog("파싱 추적");
+
+            try {
+                JSONObject getUserData = new JSONObject(body);
+                JSONArray totalData = new JSONArray(getUserData.getString("projectList"));
+                for(int i=0;i<totalData.length();i++){
+                    JSONObject projectDataSet = totalData.getJSONObject(i);
+                    String postNumber = projectDataSet.getString("number");
+                    String postTitle = projectDataSet.getString("title");
+                    String postOwner = projectDataSet.getString("owner");
+                    String postLocation = projectDataSet.getString("location");
+                    String postWrittenDate = projectDataSet.getString("writtenDate");
+                    String postView = projectDataSet.getString("view");
+                    String postLike = projectDataSet.getString("like");
+
+                    setLog("파싱 데이터 postNumber : "+postNumber);
+                    setLog("파싱 데이터 postTitle : "+postTitle);
+                    setLog("파싱 데이터 postOwner : "+postOwner);
+                    setLog("파싱 데이터 postLocation : "+postLocation);
+                    setLog("파싱 데이터 postWrittenDate : "+postWrittenDate);
+
+                    JSONArray dummyContent = new JSONArray(projectDataSet.getString("content"));
+                    DataList_project_list dataSet = new DataList_project_list();
+                    dataSet.setNumber(Integer.parseInt(postNumber));
+                    setLog("파싱 결과물 : "+dataSet.getNumber());
+                    dataSet.setTitle(postTitle);
+                    setLog("파싱 결과물 : "+dataSet.getTitle());
+                    dataSet.setOwner(postOwner);
+                    setLog("파싱 결과물 : "+dataSet.getOwner());
+                    dataSet.setLocation(postLocation);
+                    setLog("파싱 결과물 : "+dataSet.getLocation());
+                    dataSet.setWrittenDate(postWrittenDate);
+                    setLog("파싱 결과물 : "+dataSet.getWrittenDate());
+                    dataSet.setView(Integer.parseInt(postView));
+                    setLog("파싱 결과물 : "+dataSet.getView());
+                    dataSet.setLike(Integer.parseInt(postLike));
+                    setLog("파싱 결과물 : "+dataSet.getLike());
+
+                    for(int k=0;k<dummyContent.length();k++){
+                        String isMaster = null;
+                        JSONObject jsonContent = dummyContent.getJSONObject(k);
+                        try{
+                            isMaster = jsonContent.getString("isMaster");
+                        }catch (Exception e){
+
+                        }
+                        if(Boolean.valueOf(isMaster)){
+                            String masterImgPath = jsonContent.getString("imagePath");
+                            String masterImgOrientation = jsonContent.getString("orientation");
+                            setLog("대표이미지 : "+masterImgPath);
+
+                            dataSet.setImage(masterImgPath);
+                            dataSet.setImageOrientation(masterImgOrientation);
+                            setLog("파싱 결과물 : "+dataSet.getImage());
+
+                        }
+                    }
+                    dataListProject.add(dataSet);
+
+                    Message messageRefresh = handler.obtainMessage();
+                    messageRefresh.what = PROJECT_LIST_REFRESH;
+                    handler.sendMessage(messageRefresh);
+
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    };
 
     @Override
     protected void onPause() {
@@ -470,4 +555,54 @@ public class ProjectSubscribeActivity extends AppCompatActivity
 
 
     }
+    //recyclerview 터치시 이벤트 발생하는 기능 사용하려면 이 class가 있어야됨, 정확한 이유는 모름, 나중에
+    public interface ClickListener {
+        void onClick(View view, int position);
+
+        void onLongClick(View view, int position);
+    }
+
+    //recyclerview 터치시 이벤트 발생하는 기능 사용하려면 이 class가 있어야됨, 정확한 이유는 모름, 나중에
+    public static class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
+
+        private GestureDetector gestureDetector;
+        private ProjectSubscribeActivity.ClickListener clickListener;
+
+        public RecyclerTouchListener(Context context, final RecyclerView recyclerView, final ProjectSubscribeActivity
+                .ClickListener clickListener) {
+            this.clickListener = clickListener;
+            gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                    if (child != null && clickListener != null) {
+                        clickListener.onLongClick(child, recyclerView.getChildAdapterPosition(child));
+                    }
+                }
+            });
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            View child = rv.findChildViewUnder(e.getX(), e.getY());
+            if (child != null && clickListener != null && gestureDetector.onTouchEvent(e)) {
+                clickListener.onClick(child, rv.getChildAdapterPosition(child));
+            }
+            return false;
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        }
+    }
 }
+
