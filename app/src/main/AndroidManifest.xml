@@ -20,7 +20,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ProjectSubscribeActivity"></activity>
+        <activity android:name=".ProjectModifyActivity"></activity>
+        <activity android:name=".ProjectSubscribeActivity" />
         <activity android:name=".UserChannelRecordActivity" />
         <activity android:name=".UserChannelProjectActivity" />
         <activity android:name=".ViewProjectActivity" />

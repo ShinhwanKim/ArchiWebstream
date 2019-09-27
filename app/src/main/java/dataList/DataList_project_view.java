@@ -2,9 +2,10 @@ package dataList;
 
 import android.net.Uri;
 
+import java.io.Serializable;
 import java.net.URL;
 
-public class DataList_project_view {
+public class DataList_project_view implements Serializable {
     public static final int TEXT =0;
     public static final int IMAGE =1;
 

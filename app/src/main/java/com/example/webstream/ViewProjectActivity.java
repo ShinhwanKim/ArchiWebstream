@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,6 +36,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -48,7 +51,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 
 public class ViewProjectActivity extends AppCompatActivity
-    implements View.OnClickListener {
+    implements View.OnClickListener , Serializable {
 
     private static final String TAG = "ViewProjectActivity";
     public void setLog(String content){
@@ -86,14 +89,17 @@ public class ViewProjectActivity extends AppCompatActivity
 
     ImageView imgMasterImg;         //게시글의 대표 이미지. 클릭시 전체보기
     ImageView imgUp;
+    ImageView imgOption;
 
     LinearLayout linearContent;
     TextView addText;
     //ImageView addImage;
     String requestBody;
     int postNumber;
+    String strOwner;
 
     ScrollView scrollView;
+    String strPostNumber;
 
 //    RecyclerView recyContent;       //게시글 내용이 들어가는 리사이클러뷰. 2가지 뷰타입이 있다. 이미지, 텍스트 본문
     private ArrayList<DataList_project_view> dataList_project_content;
@@ -132,6 +138,7 @@ public class ViewProjectActivity extends AppCompatActivity
         txtLike = findViewById(R.id.viewproject_text_like);
         txtLikeCount = findViewById(R.id.viewproject_text_likecount);
         txtLoading = findViewById(R.id.viewproject_loading);
+        imgOption = findViewById(R.id.viewproject_image_option);
         imgMasterImg = findViewById(R.id.viewproject_image_masterimage);
 //        recyContent = findViewById(R.id.viewproject_recycler_content);
         imgUp = findViewById(R.id.viewproject_image_up);
@@ -139,11 +146,14 @@ public class ViewProjectActivity extends AppCompatActivity
         //addImage = new ImageView(ViewProjectActivity.this);
         scrollView = findViewById(R.id.viewproject_scrollview);
 
+        imgOption.setOnClickListener(this);
         txtWritter.setOnClickListener(this);
         imgLikeIcon.setOnClickListener(this);
         txtLike.setOnClickListener(this);
         imgMasterImg.setOnClickListener(this);
         imgUp.setOnClickListener(this);
+
+
 
         loadingTask = new LoadingTask();
         loadingTask.execute();
@@ -173,6 +183,7 @@ public class ViewProjectActivity extends AppCompatActivity
                         break;
                     case CHANGE_OWNER:
                         txtOwner.setText("  /  "+String.valueOf(msg.obj));
+                        strOwner = String.valueOf(msg.obj);
                         txtOwnerSecond.setText(String.valueOf(msg.obj));
                         break;
                     case CHANGE_LOCATION:
@@ -180,6 +191,9 @@ public class ViewProjectActivity extends AppCompatActivity
                         break;
                     case CHANGE_WRITTER:
                         txtWritter.setText(String.valueOf(msg.obj));
+                        if(String.valueOf(msg.obj).equals(HomeActivity.loginedUser)){
+                            imgOption.setVisibility(View.VISIBLE);
+                        }
                         break;
                     case CHANGE_WRITTENDATE:
                         txtWrittenDate.setText(String.valueOf(msg.obj));
@@ -224,7 +238,7 @@ public class ViewProjectActivity extends AppCompatActivity
                             String dummyData = jsonContentDummy.getString("BoardContent");
                             JSONArray jsonArrayContentDumm = new JSONArray(dummyData);
                             JSONObject dummyDataYet = jsonArrayContentDumm.getJSONObject(0);
-                            String strPostNumber = dummyDataYet.getString("number");
+                            strPostNumber = dummyDataYet.getString("number");
                             String strPostTitle = dummyDataYet.getString("title");
                             String strPostOwner = dummyDataYet.getString("owner");
                             String strPostLocation = dummyDataYet.getString("location");
@@ -551,6 +565,7 @@ public class ViewProjectActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
+
     }
 
     @Override
@@ -601,6 +616,55 @@ public class ViewProjectActivity extends AppCompatActivity
                 setLog("가장 위로 클릭");
                 //scrollView.scrollTo(0,0);
                 scrollView.smoothScrollTo(0,0);
+                break;
+            case R.id.viewproject_image_option:
+                setLog("옵션 클릭");
+                final CharSequence[] items = {"수정하기","삭제하기"};
+                AlertDialog.Builder selectDialog = new AlertDialog.Builder(ViewProjectActivity.this);
+                selectDialog.setTitle("게시글 옵션");
+                selectDialog.setItems(items,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //Toast.makeText(ViewProjectActivity.this, which+"선택", Toast.LENGTH_SHORT).show();
+                                switch (which){
+                                    case 0:
+                                        Intent intent = new Intent(ViewProjectActivity.this,ProjectModifyActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                        //intent.putParcelableArrayListExtra("dataSet",dataList_project_content);
+                                        intent.putExtra("postNumber",startPostNumber);
+                                        setLog("확인 필요3 : "+startPostNumber);
+                                        intent.putExtra("title",txtTitle.getText().toString());
+                                        intent.putExtra("owner",strOwner);
+                                        intent.putExtra("location",txtLocation.getText().toString());
+                                        intent.putExtra("dataSet",dataList_project_content);
+                                        startActivity(intent);
+                                        finish();
+                                        break;
+                                    case 1:
+                                        AlertDialog.Builder removeDialog = new AlertDialog.Builder(ViewProjectActivity.this);
+                                        removeDialog.setMessage("이 글을 삭제 하시겠습니까?");
+                                        removeDialog.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog2, int which) {
+                                                RemovePost(strPostNumber);
+                                                dialog2.dismiss();
+                                            }
+                                        });
+                                        removeDialog.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+
+                                                dialog.dismiss();
+                                            }
+                                        });
+                                        removeDialog.show();
+                                        break;
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                selectDialog.show();
                 break;
 
         }
@@ -704,6 +768,7 @@ public class ViewProjectActivity extends AppCompatActivity
 
         }
     };
+
     private final Callback likeCallback = new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
@@ -731,6 +796,28 @@ public class ViewProjectActivity extends AppCompatActivity
             handler.sendMessage(messageLikeList);
             setLog("서버에서 메세지보냄likeListCallback");
 
+        }
+    };
+    private void RemovePost(final String postNumber) {
+        // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        final String url = "http://13.124.223.128/board/removeBoard.php";
+        new Thread() {
+            public void run() {
+                httpConn.requestRemovePost(postNumber,callbackRemovePost, url);
+            }
+        }.start();
+    }
+    private final Callback callbackRemovePost = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            setLog( "콜백오류:"+e.getMessage());
+        }
+        @Override
+        public void onResponse(Call call, okhttp3.Response response) throws IOException {
+            requestBody = response.body().string();
+            setLog("서버에서 응답한 Bodycallback:"+requestBody);
+
+            finish();
         }
     };
 

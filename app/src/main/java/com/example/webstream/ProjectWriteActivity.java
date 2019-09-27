@@ -206,7 +206,7 @@ public class ProjectWriteActivity extends AppCompatActivity
                             Boolean imgOn = false;
                             for(int i=0;i<writeDataList.size();i++){
                                 if(writeDataList.get(i).getImgUri()==null){
-                                    imgOn = false;
+
                                 }else {
                                     imgOn = true;
                                 }
@@ -377,16 +377,12 @@ public class ProjectWriteActivity extends AppCompatActivity
 
         recyProjectWriteList.setAdapter(adapter_projectWrite);
         //리사이클러뷰 안에 있는 에딧텍스트의 값이 ""일때 아이템이 삭제 되게하려고 하다가 에러가 발생하여 해결하려했던 방법중 하나
-//        recyProjectWriteList.post(new Runnable() {
+//        recyProjectWriteList.post(new Runnable() {q
 //            @Override
 //            public void run() {
 //                adapter_projectWrite.notifyDataSetChanged();
 //            }
 //        });
-
-
-
-
 
         //------------------------------드래그앤 드랍테스트----------------------------
 //        for(int i = 0; i<50; i++){

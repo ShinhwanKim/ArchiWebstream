@@ -342,4 +342,15 @@ public class HttpConnection {
                 .build();
         client.newCall(request).enqueue(callback);
     }
+    public void requestRemovePost(String targetPostNumber,Callback callback,String url) {
+        RequestBody body = new FormBody.Builder()
+                .add("targetPostNumber",targetPostNumber)
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(callback);
+    }
+
 }

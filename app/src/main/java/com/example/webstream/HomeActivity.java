@@ -34,6 +34,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import adapter.Adapter_liveList;
 import adapter.Adapter_projectlist_home;
 import adapter.Adapter_recordList;
 import dataList.DataList_liveList;
@@ -56,6 +57,9 @@ public class HomeActivity extends AppCompatActivity
     public static final int REFRESH_PROJECT = 400;
     public static final int REFRESH_LIVE = 500;
     public static final int REFRESH_RECORD = 600;
+    public static final int NON_LIVE_LIST = 700;
+
+
 
 
 
@@ -66,6 +70,7 @@ public class HomeActivity extends AppCompatActivity
     TextView txtHeaderId;
     TextView txtHeaderNickname;
     TextView txtHeaderLogout;
+    TextView txtNonLivelist;
     View header;
     MenuItem menuItem;
     Handler handler;
@@ -80,7 +85,8 @@ public class HomeActivity extends AppCompatActivity
     Adapter_projectlist_home adapterProjectlistHome;
 
     RecyclerView recyHomeLive;
-    DataList_liveList dataLiveList;
+    ArrayList<DataList_liveList> dataLiveList;
+    Adapter_liveList adapterLiveList;
 
     RecyclerView recyHomeRecord;
     ArrayList<DataList_recordedList> dataRecordList;
@@ -110,17 +116,77 @@ public class HomeActivity extends AppCompatActivity
 
         activity = this;
 
+        txtNonLivelist = findViewById(R.id.home_non_live);
+
         recyHomeProject = findViewById(R.id.home_recycler_project);
         recyHomeProject.setLayoutManager(new LinearLayoutManager(HomeActivity.this));
         dataProjectList = new ArrayList<>();
         adapterProjectlistHome = new Adapter_projectlist_home(HomeActivity.this,dataProjectList);
         recyHomeProject.setAdapter(adapterProjectlistHome);
 
+        recyHomeProject.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recyHomeProject, new recyclerClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                DataList_project_list dataListProjectList = dataProjectList.get(position);
+
+                setLog("넘기는 넘버 : "+dataListProjectList.getNumber());
+                Intent intent = new Intent(HomeActivity.this, ViewProjectActivity.class);
+                intent.putExtra("postNumber",String.valueOf(dataListProjectList.getNumber()));
+                startActivity(intent);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
+
+        recyHomeLive = findViewById(R.id.home_recycler_live);
+        recyHomeLive.setLayoutManager(new LinearLayoutManager(HomeActivity.this));
+        dataLiveList = new ArrayList<>();
+        adapterLiveList = new Adapter_liveList(HomeActivity.this,dataLiveList);
+        recyHomeLive.setAdapter(adapterLiveList);
+
+        recyHomeLive.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recyHomeLive, new recyclerClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
+
+
         recyHomeRecord = findViewById(R.id.home_recycler_record);
         recyHomeRecord.setLayoutManager(new LinearLayoutManager(HomeActivity.this));
         dataRecordList = new ArrayList<>();
         adapterRecordList = new Adapter_recordList(HomeActivity.this,dataRecordList);
         recyHomeRecord.setAdapter(adapterRecordList);
+
+        recyHomeRecord.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recyHomeProject, new recyclerClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                DataList_recordedList dataList_recordedList = dataRecordList.get(position);
+                setLog("인텐트로 레코드뷰에 넘기는 데이터"+dataList_recordedList.getHostNickname());
+
+                Intent intent = new Intent(getApplicationContext(), ViewRecordedActivity.class);
+                intent.putExtra("host",dataList_recordedList.getHost());
+                intent.putExtra("hostNickname",dataList_recordedList.getHostNickname());
+                intent.putExtra("title",dataList_recordedList.getTitle());
+                intent.putExtra("RecordNumber",dataList_recordedList.getRecordNumber());
+                intent.putExtra("routeVideo",dataList_recordedList.getRouteVideo());
+                intent.putExtra("routeThumbnail",dataList_recordedList.getRouteThumbnail());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
 
         handler = new Handler(){
             @Override
@@ -156,6 +222,19 @@ public class HomeActivity extends AppCompatActivity
                     case REFRESH_RECORD:
                         adapterRecordList.notifyDataSetChanged();
                         break;
+                    case REFRESH_LIVE:
+                        adapterLiveList.notifyDataSetChanged();
+                        setLog("제발 보자");
+                        if(dataLiveList.get(0).getTitle()==null){
+                            txtNonLivelist.setVisibility(View.VISIBLE);
+                        }else {
+                            txtNonLivelist.setVisibility(View.GONE);
+                        }
+                        break;
+                    case NON_LIVE_LIST:
+
+                        break;
+
 
 
 
@@ -163,7 +242,7 @@ public class HomeActivity extends AppCompatActivity
                 }
             }
         };
-
+        GetLiveList();
         GetProjectList();
         GetRecordList();
 
@@ -497,6 +576,51 @@ public class HomeActivity extends AppCompatActivity
         public void onResponse(Call call, Response response) throws IOException {
             String body = response.body().string();
             setLog("서버에서 응답한 callbackHomeLiveList:"+body);
+
+            try {
+                JSONObject jsonObject = new JSONObject(body);
+                String data1 = jsonObject.getString("liveList");
+                JSONArray jaBroadcastList = new JSONArray(data1);
+                if(jaBroadcastList.getJSONObject(0).getString("host")==null){
+                    setLog("비었다요");
+                    Message messageRefresh = handler.obtainMessage();
+                    messageRefresh.what = NON_LIVE_LIST;
+                    handler.sendMessage(messageRefresh);
+                }
+                for(int i=0;i<jaBroadcastList.length();i++){
+                    Log.e(TAG,"어디보자 : "+jaBroadcastList.getJSONObject(i));
+                    JSONObject joBroadList = jaBroadcastList.getJSONObject(i);
+                    String host = joBroadList.getString("host");
+                    String title = joBroadList.getString("title");
+                    int number = Integer.parseInt(joBroadList.getString("number"));
+                    int viewer = Integer.parseInt(joBroadList.getString("viewer"));
+                    String routeThumbnail = joBroadList.getString("routeThumbnail");
+                    String routeStream = joBroadList.getString("routeStream");
+                    String password = joBroadList.getString("password");
+                    String hostNickname = joBroadList.getString("hostNickname");
+                    setLog("AAA가져온 시청자수 : "+viewer);
+                    setLog("AAA넣기전 시청자수 : "+viewer);
+
+                    DataList_liveList dataList = new DataList_liveList();
+                    dataList.setHost(host);
+                    dataList.setTitle(title);
+                    dataList.setNumber(number);
+                    dataList.setRouteThumbnail(routeThumbnail);
+                    dataList.setRouteStream(routeStream);
+                    dataList.setViewer(viewer);
+                    dataList.setPassword(password);
+                    dataList.setHostNickname(hostNickname);
+                    setLog("오디1 : ");
+                    dataLiveList.add(dataList);
+
+                    setLog("오디2 : ");
+                }
+                Message messageRefresh = handler.obtainMessage();
+                messageRefresh.what = REFRESH_LIVE;
+                handler.sendMessage(messageRefresh);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
 
         }

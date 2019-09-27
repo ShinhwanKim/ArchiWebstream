@@ -97,8 +97,8 @@ public class ProjectListActivity extends AppCompatActivity
 
     private HttpConnection httpConn = HttpConnection.getInstance();
 
-    private ArrayList<DataList_project_list> dataListProject;
-    private Adapter_projectList adapter_projectList;
+    public static ArrayList<DataList_project_list> dataListProject;
+    public static Adapter_projectList adapter_projectList;
     private RecyclerView recyProjectList;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -140,7 +140,7 @@ public class ProjectListActivity extends AppCompatActivity
         bottomNavigationView = findViewById(R.id.projectlist_bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-
+        filterResult = 0;
 
         Toolbar toolbar = findViewById(R.id.toolbar_projectlist);
 
@@ -162,6 +162,8 @@ public class ProjectListActivity extends AppCompatActivity
 
         activity = this;
 
+        currentFilter = SORT_DATE_DOWN;
+
         btnFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -175,18 +177,23 @@ public class ProjectListActivity extends AppCompatActivity
                         switch (which){
                             case 0:
                                 currentFilter = SORT_DATE_DOWN;
+                                filterResult = 0;
                                 break;
                             case 1:
                                 currentFilter = SORT_DATE_UP;
+                                filterResult = 1;
                                 break;
                             case 2:
                                 currentFilter = SORT_VIEW;
+                                filterResult = 2;
                                 break;
                             case 3:
                                 currentFilter = SORT_LIKE;
+                                filterResult = 3;
                                 break;
                             case 4:
                                 currentFilter = SORT_MYLIKE;
+                                filterResult = 4;
                                 break;
                         }
 
@@ -315,9 +322,9 @@ public class ProjectListActivity extends AppCompatActivity
         super.onResume();
         setLog("onResume");
         //바텀 네비게이션 뷰 선택
-        filterResult = 0;
+
         getStartIndex = 0;
-        currentFilter = SORT_DATE_DOWN;
+
         filterChangeIs = false;
 
         bottomNavigationView.setSelectedItemId(R.id.bottom_navigation_projectlist);
@@ -341,7 +348,8 @@ public class ProjectListActivity extends AppCompatActivity
             sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php");
 
         }
-        //dataListProject.clear();
+        dataListProject.clear();
+        adapter_projectList.notifyDataSetChanged();
         GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
         setLog("데이터 불러오기 최초 : "+getStartIndex);
 
@@ -375,6 +383,8 @@ public class ProjectListActivity extends AppCompatActivity
         public void onResponse(Call call, Response response) throws IOException {
             String body = response.body().string();
             setLog("서버에서 응답한 Body:"+body);
+
+
 
             try {
                 setLog("제이슨 시작");

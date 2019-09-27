@@ -82,7 +82,7 @@ public class RecordedListActivity extends AppCompatActivity {
                 intent.putExtra("RecordNumber",dataList_recordedList.getRecordNumber());
                 intent.putExtra("routeVideo",dataList_recordedList.getRouteVideo());
                 intent.putExtra("routeThumbnail",dataList_recordedList.getRouteThumbnail());
-                //startActivity(intent);
+                startActivity(intent);
 
             }
 

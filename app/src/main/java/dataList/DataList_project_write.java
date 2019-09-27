@@ -2,7 +2,9 @@ package dataList;
 
 import android.net.Uri;
 
-public class DataList_project_write {
+import java.io.Serializable;
+
+public class DataList_project_write implements Serializable {
     public static final int TEXT =0;
     public static final int IMAGE =1;
     public static final int MASTER =2;
@@ -12,6 +14,26 @@ public class DataList_project_write {
     int position;
     Uri imgUri;
     boolean master;
+    int orientation;
+    boolean already;
+
+    public int getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(int orientation) {
+        this.orientation = orientation;
+    }
+
+
+
+    public boolean isAlready() {
+        return already;
+    }
+
+    public void setAlready(boolean already) {
+        this.already = already;
+    }
 
     public boolean isMaster() {
         return master;
