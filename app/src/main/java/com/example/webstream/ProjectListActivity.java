@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -94,6 +95,8 @@ public class ProjectListActivity extends AppCompatActivity
 
     public static Activity activity = null;
 
+    LoadingTask loadingTask;
+
 
     private HttpConnection httpConn = HttpConnection.getInstance();
 
@@ -163,6 +166,8 @@ public class ProjectListActivity extends AppCompatActivity
         activity = this;
 
         currentFilter = SORT_DATE_DOWN;
+
+
 
         btnFilter.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -254,21 +259,24 @@ public class ProjectListActivity extends AppCompatActivity
         recyProjectList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                setLog("스크롤 중");
-                super.onScrolled(recyclerView, dx, dy);
+                if(currentFilter == SORT_DATE_DOWN){
+                    setLog("스크롤 중");
+                    super.onScrolled(recyclerView, dx, dy);
 
-                int lastVisibleItemPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastCompletelyVisibleItemPosition();
-                int itemTotalCount = recyclerView.getAdapter().getItemCount();
-                setLog("스크롤 : "+lastVisibleItemPosition);
-                setLog("스크롤2 : "+itemTotalCount);
-                if(lastVisibleItemPosition == itemTotalCount-1){
-                    setLog("마지막 도착");
-                    setLog("데이터 불러오기스크롤 : "+getStartIndex);
-                    if(!filterChangeIs){
-                        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+                    int lastVisibleItemPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastCompletelyVisibleItemPosition();
+                    int itemTotalCount = recyclerView.getAdapter().getItemCount();
+                    setLog("스크롤 : "+lastVisibleItemPosition);
+                    setLog("스크롤2 : "+itemTotalCount);
+                    if(lastVisibleItemPosition == itemTotalCount-1){
+                        setLog("마지막 도착");
+                        setLog("데이터 불러오기스크롤 : "+getStartIndex);
+                        if(!filterChangeIs){
+                            GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+                        }
+
                     }
-
                 }
+
             }
         });
 
@@ -302,6 +310,8 @@ public class ProjectListActivity extends AppCompatActivity
                         break;
                     case REFRESH:
                         adapter_projectList.notifyItemChanged(dataListProject.size());
+                        loadingTask.progressDialog.dismiss();
+                        loadingTask.cancel(true);
                         break;
 
 
@@ -366,6 +376,10 @@ public class ProjectListActivity extends AppCompatActivity
     }
     private void GetProjectList(final String param, final int param2, final String currentUser,final String url) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+//        dataListProject.clear();
+//        adapter_projectList.notifyDataSetChanged();
+        loadingTask = new LoadingTask();
+        loadingTask.execute();
         new Thread() {
             public void run() {
                 httpConn.requestProjectList(param, param2,currentUser,callbackForProjectList, url);
@@ -541,6 +555,40 @@ public class ProjectListActivity extends AppCompatActivity
         }
     };
 
+    private class LoadingTask extends AsyncTask<Void,Void,Void> {
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            setLog("onPreExecute");
+            progressDialog = new ProgressDialog(ProjectListActivity.this);
+            progressDialog.setMessage("데이터 불러오는 중...");
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            setLog("doInBackground");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            setLog("onPostExecute");
+            if(progressDialog != null){
+                progressDialog.dismiss();
+            }
+
+        }
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         // Handle navigation view item clicks here.
@@ -568,7 +616,16 @@ public class ProjectListActivity extends AppCompatActivity
             Intent intent = new Intent(ProjectListActivity.this,MyProfileActivity.class);
             intent.putExtra("loginedUser",loginedUser);
             startActivity(intent);
+        }else if (id == R.id.nav_ar){
+            Intent intent = new Intent(ProjectListActivity.this,ArActivity.class);
+            startActivity(intent);
+        }else if (id == R.id.nav_myactivity){
+            Intent intent = new Intent(ProjectListActivity.this,UserChannelProjectActivity.class);
+            intent.putExtra("writter",loginedUser);
+            startActivity(intent);
         }
+
+
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout_projectlist);
         drawer.closeDrawer(GravityCompat.START);

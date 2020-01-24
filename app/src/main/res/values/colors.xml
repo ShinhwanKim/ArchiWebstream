@@ -12,6 +12,8 @@
     <color name="colorGold">#b3956f</color>
     <color name="colorGreen">#3ED641</color>
     <color name="colorBaseText">#B7B7B7</color>
+    <color name="trans">#00B7B7B7</color>
+
 
     <color name="test">#3ED641</color>
 </resources>

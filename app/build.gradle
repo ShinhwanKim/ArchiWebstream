@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.ar.sceneform.plugin'
 
 android {
     compileSdkVersion 28
@@ -16,6 +17,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -48,4 +53,36 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'gun0912.ted:tedbottompicker:2.0.1'
+    implementation "com.google.ar.sceneform.ux:sceneform-ux:1.12.0"
 }
+//apply plugin: 'com.google.ar.sceneform.plugin'
+
+
+
+sceneform.asset('sampleData/bed.obj',
+        'default',
+        'sampleData/bed.sfa',
+        'src/main/res/raw/bed')
+
+
+sceneform.asset('sampleData/piano.obj',
+        'default',
+        'sampleData/piano.sfa',
+        'src/main/res/raw/piano')
+
+sceneform.asset('sampleData/dishwasher.obj',
+        'default',
+        'sampleData/dishwasher.sfa',
+        'src/main/res/raw/dishwasher')
+
+
+
+sceneform.asset('sampleData/bookcase.obj',
+        'default',
+        'sampleData/bookcase.sfa',
+        'src/main/res/raw/bookcase')
+
+sceneform.asset('sampleData/desk.obj',
+        'default',
+        'sampleData/desk.sfa',
+        'src/main/res/raw/desk')

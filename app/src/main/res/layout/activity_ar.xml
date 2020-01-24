@@ -1,0 +1,50 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ArActivity">
+
+    <fragment android:name="com.google.ar.sceneform.ux.ArFragment"
+        android:id="@+id/ux_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/bed"
+                android:layout_width="87dp"
+                android:layout_height="82dp"
+                android:src="@drawable/bed" />
+            <ImageView
+                android:id="@+id/bookcase"
+                android:layout_width="87dp"
+                android:layout_height="82dp"
+                android:src="@drawable/bookcase" />
+            <ImageView
+                android:id="@+id/desk"
+                android:layout_width="87dp"
+                android:layout_height="82dp"
+                android:src="@drawable/desk" />
+            <ImageView
+                android:id="@+id/dishwasher"
+                android:layout_width="87dp"
+                android:layout_height="82dp"
+                android:src="@drawable/waher" />
+            <ImageView
+                android:id="@+id/piano"
+                android:layout_width="87dp"
+                android:layout_height="82dp"
+                android:src="@drawable/piano" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+
+</FrameLayout>

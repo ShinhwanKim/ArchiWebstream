@@ -10,8 +10,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -76,6 +78,8 @@ public class HomeActivity extends AppCompatActivity
     Handler handler;
     ImageView imgProfile;
 
+    LoadingTask loadingTask;
+
 
     public static Activity activity = null;
     boolean autoLogin;
@@ -91,6 +95,8 @@ public class HomeActivity extends AppCompatActivity
     RecyclerView recyHomeRecord;
     ArrayList<DataList_recordedList> dataRecordList;
     Adapter_recordList adapterRecordList;
+
+    int getDataCheck;
 
 
     @Override
@@ -217,13 +223,28 @@ public class HomeActivity extends AppCompatActivity
 
                         break;
                     case REFRESH_PROJECT:
+                        getDataCheck ++;
                         adapterProjectlistHome.notifyDataSetChanged();
+                        if(getDataCheck == 3){
+                            loadingTask.progressDialog.dismiss();
+                            loadingTask.cancel(true);
+                        }
                         break;
                     case REFRESH_RECORD:
+                        getDataCheck ++;
                         adapterRecordList.notifyDataSetChanged();
+                        if(getDataCheck == 3){
+                            loadingTask.progressDialog.dismiss();
+                            loadingTask.cancel(true);
+                        }
                         break;
                     case REFRESH_LIVE:
+                        getDataCheck ++;
                         adapterLiveList.notifyDataSetChanged();
+                        if(getDataCheck == 3){
+                            loadingTask.progressDialog.dismiss();
+                            loadingTask.cancel(true);
+                        }
                         setLog("제발 보자");
                         if(dataLiveList.get(0).getTitle()==null){
                             txtNonLivelist.setVisibility(View.VISIBLE);
@@ -232,7 +253,11 @@ public class HomeActivity extends AppCompatActivity
                         }
                         break;
                     case NON_LIVE_LIST:
-
+                        getDataCheck ++;
+                        if(getDataCheck == 3){
+                            loadingTask.progressDialog.dismiss();
+                            loadingTask.cancel(true);
+                        }
                         break;
 
 
@@ -291,6 +316,39 @@ public class HomeActivity extends AppCompatActivity
         //navigationView.removeHeaderView(navigationView.getHeaderView(0));
     }
 
+    private class LoadingTask extends AsyncTask<Void,Void,Void> {
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            setLog("onPreExecute");
+            progressDialog = new ProgressDialog(HomeActivity.this);
+            progressDialog.setMessage("데이터 불러오는 중...");
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            setLog("doInBackground");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            setLog("onPostExecute");
+            if(progressDialog != null){
+                progressDialog.dismiss();
+            }
+
+        }
+    }
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout_home);
@@ -352,7 +410,16 @@ public class HomeActivity extends AppCompatActivity
             Intent intent = new Intent(HomeActivity.this,MyProfileActivity.class);
             intent.putExtra("loginedUser",loginedUser);
             startActivity(intent);
+        }else if (id == R.id.nav_ar){
+            Intent intent = new Intent(HomeActivity.this,ArActivity.class);
+            startActivity(intent);
+        }else if (id == R.id.nav_myactivity){
+            Intent intent = new Intent(HomeActivity.this,UserChannelProjectActivity.class);
+            intent.putExtra("writter",loginedUser);
+            startActivity(intent);
         }
+
+
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout_home);
         drawer.closeDrawer(GravityCompat.START);
@@ -559,6 +626,8 @@ public class HomeActivity extends AppCompatActivity
 
     private void GetLiveList() {
 // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
+        loadingTask = new LoadingTask();
+        loadingTask.execute();
         final String url ="http://13.124.223.128/home/getLiveList.php";
         new Thread() {
             public void run() {

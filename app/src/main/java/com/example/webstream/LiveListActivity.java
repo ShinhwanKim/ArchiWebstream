@@ -521,6 +521,13 @@ public class LiveListActivity extends AppCompatActivity
             Intent intent = new Intent(LiveListActivity.this,MyProfileActivity.class);
             intent.putExtra("loginedUser",loginedUser);
             startActivity(intent);
+        }else if (id == R.id.nav_ar){
+            Intent intent = new Intent(LiveListActivity.this,ArActivity.class);
+            startActivity(intent);
+        }else if (id == R.id.nav_myactivity){
+            Intent intent = new Intent(LiveListActivity.this,UserChannelProjectActivity.class);
+            intent.putExtra("writter",loginedUser);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout_livelist);

@@ -32,6 +32,13 @@
             android:id="@+id/nav_exploration"
             android:title="@string/menu_exploration" />
 
+        <item
+            android:id="@+id/nav_ar"
+            android:title="@string/menu_ar" />
+        <item
+            android:id="@+id/nav_myactivity"
+            android:title="@string/menu_myactivity"/>
+
     </group>
     <group android:checkableBehavior="single">
 
@@ -39,6 +46,8 @@
             android:id="@+id/nav_myprofile"
             android:title="@string/menu_myprofile"
             android:visible="false"/>
+
+
 
     </group>
 

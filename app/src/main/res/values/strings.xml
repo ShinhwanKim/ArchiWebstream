@@ -19,4 +19,6 @@
     <string name="menu_interview">인터뷰</string>
     <string name="menu_exploration">답사</string>
     <string name="menu_myprofile">내 정보</string>
+    <string name="menu_ar">가구배치</string>
+    <string name="menu_myactivity">내 활동</string>
 </resources>

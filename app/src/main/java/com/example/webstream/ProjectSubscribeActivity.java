@@ -361,6 +361,11 @@ public class ProjectSubscribeActivity extends AppCompatActivity
             String body = response.body().string();
             setLog("서버에서 응답한 GetSubscriberList:"+body);
 
+            dataList_subscriber_list.clear();
+            Message messageRefresh1 = handler.obtainMessage();
+            messageRefresh1.what = REFRESH;
+            handler.sendMessage(messageRefresh1);
+
             try {
                 JSONObject getSubscriberData = new JSONObject(body);
                 JSONArray totalData = new JSONArray(getSubscriberData.getString("subscriberList"));
@@ -378,9 +383,9 @@ public class ProjectSubscribeActivity extends AppCompatActivity
 
                 }
 
-                Message messageRefresh = handler.obtainMessage();
-                messageRefresh.what = REFRESH;
-                handler.sendMessage(messageRefresh);
+                Message messageRefresh2 = handler.obtainMessage();
+                messageRefresh2.what = REFRESH;
+                handler.sendMessage(messageRefresh2);
 
                 //adapter_subscribelist.notifyItemChanged(dataList_subscriber_list.size());
             } catch (JSONException e) {
@@ -514,9 +519,17 @@ public class ProjectSubscribeActivity extends AppCompatActivity
             Intent intent = new Intent(ProjectSubscribeActivity.this,MyProfileActivity.class);
             intent.putExtra("loginedUser",loginedUser);
             startActivity(intent);
+        }else if (id == R.id.nav_ar){
+            Intent intent = new Intent(ProjectSubscribeActivity.this,ArActivity.class);
+            startActivity(intent);
+        }else if (id == R.id.nav_myactivity){
+            Intent intent = new Intent(ProjectSubscribeActivity.this,UserChannelProjectActivity.class);
+            intent.putExtra("writter",loginedUser);
+            startActivity(intent);
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout_projectlist);
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_project_subscribe);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
