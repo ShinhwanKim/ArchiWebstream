@@ -263,7 +263,7 @@ public class ProjectSubscribeActivity extends AppCompatActivity
             menuItemMyprofile.setVisible(true);
 
 
-            sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php");
+            sendData(loginedUser,"http://"+HomeActivity.singletonData.ipAppData+"/getUserData/getUserData.php");
 
         }
         dataList_subscriber_list.clear();
@@ -271,7 +271,7 @@ public class ProjectSubscribeActivity extends AppCompatActivity
 
         GetProjectList();
         //dataListProject.clear();
-//        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+//        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://"+HomeActivity.singletonData.ipAppData+"/board/getProjectList.php");
 //        setLog("데이터 불러오기 최초 : "+getStartIndex);
 
     }
@@ -343,7 +343,7 @@ public class ProjectSubscribeActivity extends AppCompatActivity
 
     private void GetSubscriberList() {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/subscribe/getSubscriberList.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/subscribe/getSubscriberList.php";
         new Thread() {
             public void run() {
                 httpConn.requestGetSubscriberList(loginedUser, callbackGetSubscriberList, url);
@@ -396,7 +396,7 @@ public class ProjectSubscribeActivity extends AppCompatActivity
 
     private void GetProjectList() {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/subscribe/getSubscriberProjectList.php";
+        final String url = "http://c/subscribe/getSubscriberProjectList.php";
         new Thread() {
             public void run() {
                 httpConn.requestSubscriberProjectList(loginedUser,callbackForProjectList, url);

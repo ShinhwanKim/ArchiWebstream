@@ -198,7 +198,7 @@ public class ProjectModifyActivity extends AppCompatActivity
                                             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,ExifInterface.ORIENTATION_UNDEFINED);
                                             setLog("ddddddd : "+ orientation);
 
-                                            String ImageUploadURL = "http://13.124.223.128/uploadImg/boardImg/uploadBoardImage.php";
+                                            String ImageUploadURL = "http://"+HomeActivity.singletonData.ipAppData+"/uploadImg/boardImg/uploadBoardImage.php";
                                             new ImageUploadTask().execute(
                                                     ImageUploadURL,
                                                     modifyDataListAfter.get(i).getImgUri().getPath(),
@@ -346,7 +346,7 @@ public class ProjectModifyActivity extends AppCompatActivity
 
                 JSONObject jsonObject = JSONParser.uploadImage(strings[0],strings[1]);
                 if (jsonObject != null){
-                    String imgPath = "http://13.124.223.128/uploadImg/boardImg/"+jsonObject.getString("result");
+                    String imgPath = "http://"+HomeActivity.singletonData.ipAppData+"/uploadImg/boardImg/"+jsonObject.getString("result");
                     JSONObject jsonImage = new JSONObject();
                     jsonImage.put("position",strings[2]);
                     jsonImage.put("imagePath",imgPath);
@@ -412,7 +412,7 @@ public class ProjectModifyActivity extends AppCompatActivity
     //게시글 정보 저장 하는 메서드 인자값[0]은 게시글 기본 정보(제목, 작성자, 위치, 소유자등) 인자값[1]은 게시글 내용.
     private void sendData(final JSONObject jsonContent, final JSONArray jsonArrayContent) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/board/modifyBoardContent.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/board/modifyBoardContent.php";
         new Thread() {
             public void run() {
                 httpConn.requestBoardWrite(jsonContent.toString(), jsonArrayContent.toString(),callback, url);

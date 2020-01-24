@@ -251,7 +251,7 @@ public class BroadcastActivity extends AppCompatActivity
 // Set the connection properties for the target Wowza Streaming Engine server or Wowza Streaming Cloud live stream
 
         //-----------------------------와우자 스트리밍 엔진에 송출하기 위한 연결 루트??(수정필요)----------------------------
-        goCoderBroadcastConfig.setHostAddress("13.209.207.197");
+        goCoderBroadcastConfig.setHostAddress(""+HomeActivity.singletonData.ipStreaming+"");
         goCoderBroadcastConfig.setPortNumber(1935);
         goCoderBroadcastConfig.setApplicationName("live");
         goCoderBroadcastConfig.setStreamName(streamRoute);
@@ -272,7 +272,7 @@ public class BroadcastActivity extends AppCompatActivity
         btnBroadcast = findViewById(R.id.broadcast_button);
         btnBroadcast.setOnClickListener(this);
 
-        CommunicateServer("http://13.124.223.128/recording/createUserRecordList.php",FLAG_CREATE_USER);
+        CommunicateServer("http://"+HomeActivity.singletonData.ipAppData+"/recording/createUserRecordList.php",FLAG_CREATE_USER);
 
         final RecyclerView recyChatList = findViewById(R.id.activity_broadcast_recyclerview_chatlist);
         recyChatList.setLayoutManager(new LinearLayoutManager(BroadcastActivity.this));
@@ -322,11 +322,11 @@ public class BroadcastActivity extends AppCompatActivity
                         break;
                     case PARTICIPATE_VIEWER:
                         txtViewer.setText(String.valueOf(intViewer));
-                        sendData("http://13.124.223.128/broadcast/updateViewer.php",UPDATE_VIEWER);
+                        sendData("http://"+HomeActivity.singletonData.ipAppData+"/broadcast/updateViewer.php",UPDATE_VIEWER);
                         break;
                     case EXIT_VIEWER:
                         txtViewer.setText(String.valueOf(intViewer));
-                        sendData("http://13.124.223.128/broadcast/updateViewer.php",UPDATE_VIEWER);
+                        sendData("http://"+HomeActivity.singletonData.ipAppData+"/broadcast/updateViewer.php",UPDATE_VIEWER);
                         break;
                 }
             }
@@ -427,10 +427,10 @@ public class BroadcastActivity extends AppCompatActivity
                             goCoderBroadcaster.endBroadcast(BroadcastActivity.this);
                             setLog("방송종료");
 
-                            CommunicateServer("http://13.124.223.128/broadcast/deleteBroadcastList.php",FLAG_NONE);
-                            CommunicateServer("http://13.124.223.128/broadcast/insertRecordList.php",FLAG_INSERT_RECORD);
+                            CommunicateServer("http://"+HomeActivity.singletonData.ipAppData+"/broadcast/deleteBroadcastList.php",FLAG_NONE);
+                            CommunicateServer("http://"+HomeActivity.singletonData.ipAppData+"/broadcast/insertRecordList.php",FLAG_INSERT_RECORD);
                             setLog("썸네일 경로2 : "+thumbnailRoute);
-                            CommunicateServer("http://13.209.207.197/php/recording/stopRecord.php",FLAG_STOP_RECORD);
+                            CommunicateServer("http://"+HomeActivity.singletonData.ipStreaming+"/php/recording/stopRecord.php",FLAG_STOP_RECORD);
 
                             btnBroadcast.setImageResource(R.drawable.ic_start);
 
@@ -471,11 +471,11 @@ public class BroadcastActivity extends AppCompatActivity
 
                     //------------------------------ArchiApp 서버에 입력한 정보들 저장장---------------------------
                     //post로 서버에 방송 정보 전달 후 DB에 저장
-                    CommunicateServer("http://13.124.223.128/broadcast/insertBroadcast.php",FLAG_INSERT_BROADCAST);
+                    CommunicateServer("http://"+HomeActivity.singletonData.ipAppData+"/broadcast/insertBroadcast.php",FLAG_INSERT_BROADCAST);
 
-                    CommunicateServer("http://13.209.207.197/php/recording/startRecord.php",FLAG_START_RECORD);
+                    CommunicateServer("http://"+HomeActivity.singletonData.ipStreaming+"/php/recording/startRecord.php",FLAG_START_RECORD);
 
-                    sendData("http://13.124.223.128/recording/createRecordChatList.php",CREATE_RECORDING_CHAT_TABLE);
+                    sendData("http://"+HomeActivity.singletonData.ipAppData+"/recording/createRecordChatList.php",CREATE_RECORDING_CHAT_TABLE);
 
 
                     btnBroadcast.setImageResource(R.drawable.ic_stop);
@@ -639,7 +639,7 @@ public class BroadcastActivity extends AppCompatActivity
                     setLog(streamRoute);
                 }else if(flag == FLAG_CREATE_USER){
                     setLog("유저생성완료 : "+response);
-                    CommunicateServer("http://13.124.223.128/broadcast/inquireBroadcastList.php",FLAG_INQUIRE);
+                    CommunicateServer("http://"+HomeActivity.singletonData.ipAppData+"/broadcast/inquireBroadcastList.php",FLAG_INQUIRE);
                 }else if(flag == FLAG_SAVE_THUMBNAIL){
                     /*String dataResponse = response.replaceAll("\\P{Print}","");*/
                     thumbnailRoute = response.replaceAll("\\P{Print}","");
@@ -655,7 +655,7 @@ public class BroadcastActivity extends AppCompatActivity
                             try {
                                 Thread.sleep(5000);
                                 setLog("녹환끝 썸네일 시작 : ");
-                                CommunicateServer("http://13.124.223.128/uploadImg/downloadThumbnailImg.php",FLAG_SAVE_THUMBNAIL);
+                                CommunicateServer("http://"+HomeActivity.singletonData.ipAppData+"/uploadImg/downloadThumbnailImg.php",FLAG_SAVE_THUMBNAIL);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -713,7 +713,7 @@ public class BroadcastActivity extends AppCompatActivity
 
     public void onSwitchCamera(View view) {
         WOWZCamera newCamera = goCoderCameraView.switchCamera();
-        /*CommunicateServer("http://13.124.223.128/uploadImg/downloadThumbnailImg.php",FLAG_SAVE_THUMBNAIL);*/
+        /*CommunicateServer("http://"+HomeActivity.singletonData.ipAppData+"/uploadImg/downloadThumbnailImg.php",FLAG_SAVE_THUMBNAIL);*/
     }
 
     @Override
@@ -759,7 +759,7 @@ public class BroadcastActivity extends AppCompatActivity
         new Thread() {
             public void run() {
                 long startTime = SystemClock.elapsedRealtime();
-                String url = "http://13.124.223.128/recording/saveChatList.php";
+                String url = "http://"+HomeActivity.singletonData.ipAppData+"/recording/saveChatList.php";
                 httpConn.requestSaveChatContent(streamRoute, nickname, content,startTime, callback, url);
             }
         }.start();

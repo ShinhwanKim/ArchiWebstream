@@ -3,8 +3,8 @@
 
     <domain-config cleartextTrafficPermitted="true">
 
-        <domain includeSubdomains="true">13.124.223.128</domain>
-        <domain includeSubdomains="true">13.209.207.197</domain>
+        <domain includeSubdomains="true">13.125.163.228</domain>
+        <domain includeSubdomains="true">52.79.222.251</domain>
 
     </domain-config>
 

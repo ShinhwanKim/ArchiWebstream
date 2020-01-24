@@ -85,7 +85,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 strId = etxtInputId.getText().toString();
                 strPassword = etxtInputPassword.getText().toString();
-                String loginUrl = "http://13.124.223.128/login/login.php";
+                String loginUrl = "http://"+HomeActivity.singletonData.ipAppData+"/login/login.php";
                 sendDataLogin(strId, strPassword,loginUrl);
 
 

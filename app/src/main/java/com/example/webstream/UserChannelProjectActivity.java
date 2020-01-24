@@ -265,7 +265,7 @@ public class UserChannelProjectActivity extends AppCompatActivity {
 
     private void GetUserData(final String param) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/getUserData/getUserData.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/getUserData/getUserData.php";
         new Thread() {
             public void run() {
                 httpConn.requestGetUserData(param, callbackGetUserData, url);
@@ -325,7 +325,7 @@ public class UserChannelProjectActivity extends AppCompatActivity {
     }
 
     private void GetProjectList(final String targetId){
-        final String url ="http://13.124.223.128/board/getProjectListChannel.php";
+        final String url ="http://"+HomeActivity.singletonData.ipAppData+"/board/getProjectListChannel.php";
         new Thread(){
             @Override
             public void run() {
@@ -435,7 +435,7 @@ public class UserChannelProjectActivity extends AppCompatActivity {
 
     private void SendSubscribeData(final String flag) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/subscribe/sendSubscribeData.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/subscribe/sendSubscribeData.php";
         new Thread() {
             public void run() {
                 setLog("플래그 : "+flag);

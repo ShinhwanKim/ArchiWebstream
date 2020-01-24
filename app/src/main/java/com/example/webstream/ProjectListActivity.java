@@ -212,7 +212,7 @@ public class ProjectListActivity extends AppCompatActivity
                         dataListProject.clear();
                         adapter_projectList.notifyDataSetChanged();
                         filterChangeIs = true;
-                        GetProjectList(currentFilter,getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+                        GetProjectList(currentFilter,getStartIndex,HomeActivity.loginedUser,"http://"+HomeActivity.singletonData.ipAppData+"/board/getProjectList.php");
                     }
                 })
                 .setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -271,7 +271,7 @@ public class ProjectListActivity extends AppCompatActivity
                         setLog("마지막 도착");
                         setLog("데이터 불러오기스크롤 : "+getStartIndex);
                         if(!filterChangeIs){
-                            GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+                            GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://"+HomeActivity.singletonData.ipAppData+"/board/getProjectList.php");
                         }
 
                     }
@@ -355,12 +355,12 @@ public class ProjectListActivity extends AppCompatActivity
             menuItemMyprofile.setVisible(true);
 
 
-            sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php");
+            sendData(loginedUser,"http://"+HomeActivity.singletonData.ipAppData+"/getUserData/getUserData.php");
 
         }
         dataListProject.clear();
         adapter_projectList.notifyDataSetChanged();
-        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://13.124.223.128/board/getProjectList.php");
+        GetProjectList(currentFilter, getStartIndex,HomeActivity.loginedUser,"http://"+HomeActivity.singletonData.ipAppData+"/board/getProjectList.php");
         setLog("데이터 불러오기 최초 : "+getStartIndex);
 
     }

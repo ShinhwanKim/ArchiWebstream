@@ -725,7 +725,7 @@ public class ViewProjectActivity extends AppCompatActivity
 
     private void getBoardContent(final String postNumber) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/board/getBoardContent.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/board/getBoardContent.php";
         new Thread() {
             public void run() {
                 httpConn.requestGetBoard(postNumber,callback, url);
@@ -734,7 +734,7 @@ public class ViewProjectActivity extends AppCompatActivity
     }
     private void getMyLikeList(final String postNumber) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/board/getMyLikeList.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/board/getMyLikeList.php";
         new Thread() {
             public void run() {
                 httpConn.requestLikeList(postNumber,likeListCallback, url);
@@ -744,7 +744,7 @@ public class ViewProjectActivity extends AppCompatActivity
 
     private void touchLike(final String postNumber, final String flag) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/board/boardLike.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/board/boardLike.php";
         new Thread() {
             public void run() {
                 httpConn.requestLike(postNumber,flag,likeCallback, url);
@@ -800,7 +800,7 @@ public class ViewProjectActivity extends AppCompatActivity
     };
     private void RemovePost(final String postNumber) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/board/removeBoard.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/board/removeBoard.php";
         new Thread() {
             public void run() {
                 httpConn.requestRemovePost(postNumber,callbackRemovePost, url);

@@ -342,7 +342,7 @@ public class UserChannelRecordActivity extends AppCompatActivity {
 
     private void GetUserData(final String param) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/getUserData/getUserData.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/getUserData/getUserData.php";
         new Thread() {
             public void run() {
                 httpConn.requestGetUserData(param, callbackGetUserData, url);
@@ -397,7 +397,7 @@ public class UserChannelRecordActivity extends AppCompatActivity {
 
     private void GetRecordList(final String param) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/recording/getRecordListChannel.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/recording/getRecordListChannel.php";
         new Thread() {
             public void run() {
                 httpConn.requestRecordListChannel(param, callbackGetRecordList, url);
@@ -460,7 +460,7 @@ public class UserChannelRecordActivity extends AppCompatActivity {
 
     private void GetStreamList(final String param) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/broadcast/getBroadListChannel.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/broadcast/getBroadListChannel.php";
         new Thread() {
             public void run() {
                 httpConn.requestBroadListChannel(param, callbackGetStreamList, url);
@@ -555,7 +555,7 @@ public class UserChannelRecordActivity extends AppCompatActivity {
 
     private void SendSubscribeData(final String flag) {
         // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url = "http://13.124.223.128/subscribe/sendSubscribeData.php";
+        final String url = "http://"+HomeActivity.singletonData.ipAppData+"/subscribe/sendSubscribeData.php";
         new Thread() {
             public void run() {
                 setLog("플래그 : "+flag);

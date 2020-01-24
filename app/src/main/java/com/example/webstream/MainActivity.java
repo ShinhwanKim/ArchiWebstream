@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
         //------------------------------서버에서 방송 목록을 가져옴----------------------------
 
         queue = Volley.newRequestQueue(this);
-        String url = "http://13.124.223.128/broadcast/getBroadcastList.php";
+        String url = "http://"+HomeActivity.singletonData.ipAppData+"/broadcast/getBroadcastList.php";
 
         final StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override

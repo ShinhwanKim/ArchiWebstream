@@ -50,6 +50,7 @@ public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener{
 
     private static final String TAG = "HomeActivity";
+    public static SingletonData singletonData = new SingletonData();
     public void setLog(String content){
         Log.e(TAG,content);}
 
@@ -306,7 +307,7 @@ public class HomeActivity extends AppCompatActivity
             menuItem.setVisible(true);
 
 
-            sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php");
+            sendData(loginedUser,"http://"+singletonData.ipAppData+"/getUserData/getUserData.php");
 
         }
         //헤더 추가 가능
@@ -516,7 +517,7 @@ public class HomeActivity extends AppCompatActivity
 
     private void GetProjectList() {
 // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url ="http://13.124.223.128/home/getProjectList.php";
+        final String url ="http://"+singletonData.ipAppData+"/home/getProjectList.php";
         new Thread() {
             public void run() {
                 httpConn.requestHomeProjectList(callbackHomeProjectList, url);
@@ -628,7 +629,7 @@ public class HomeActivity extends AppCompatActivity
 // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
         loadingTask = new LoadingTask();
         loadingTask.execute();
-        final String url ="http://13.124.223.128/home/getLiveList.php";
+        final String url ="http://"+singletonData.ipAppData+"/home/getLiveList.php";
         new Thread() {
             public void run() {
                 httpConn.requestHomeLiveList(callbackHomeLiveList, url);
@@ -697,7 +698,7 @@ public class HomeActivity extends AppCompatActivity
 
     private void GetRecordList() {
 // 네트워크 통신하는 작업은 무조건 작업스레드를 생성해서 호출 해줄 것!!
-        final String url ="http://13.124.223.128/home/getRecordList.php";
+        final String url ="http://"+singletonData.ipAppData+"/home/getRecordList.php";
         new Thread() {
             public void run() {
                 httpConn.requestHomeRecordList(callbackHomeRecordList, url);

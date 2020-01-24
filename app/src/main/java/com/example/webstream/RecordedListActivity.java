@@ -110,7 +110,7 @@ public class RecordedListActivity extends AppCompatActivity {
         //------------------------------서버에서 방송 목록을 가져옴----------------------------
 
         queue = Volley.newRequestQueue(this);
-        String url = "http://13.124.223.128/recording/getRecordedList.php";
+        String url = "http://"+HomeActivity.singletonData.ipAppData+"/recording/getRecordedList.php";
         setLog("데이터 접속중 4 ");
 
         sendData("테스트",url);

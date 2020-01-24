@@ -270,7 +270,7 @@ public class MyProfileActivity extends Activity
                 }
             }
         };
-        sendData(loginedUser,"http://13.124.223.128/getUserData/getUserData.php", GET_USER_DATA);
+        sendData(loginedUser,"http://"+HomeActivity.singletonData.ipAppData+"/getUserData/getUserData.php", GET_USER_DATA);
 
     }
 
@@ -494,7 +494,7 @@ public class MyProfileActivity extends Activity
                     @Override
                     public void onClick(View view) {
                         strChangeInputNickname = etxtInputNickname.getText().toString();
-                        String chaneNicknameUrl = "http://13.124.223.128/change/changeNickname.php";
+                        String chaneNicknameUrl = "http://"+HomeActivity.singletonData.ipAppData+"/change/changeNickname.php";
 
                         if(strChangeInputNickname.equals("")){
                             Toast.makeText(MyProfileActivity.this, "입력정보를 다시 확인해주세요.", Toast.LENGTH_SHORT).show();
@@ -533,7 +533,7 @@ public class MyProfileActivity extends Activity
                         String strChangeInputExistingPassword = etxtInputExistingPassowrd.getText().toString();
                         String strChangeInputNewPassword = etxtInputNewPassword.getText().toString();
                         String stChangeInputrNewPasswordReconfirm = etxtInputNewPasswordReconfirm.getText().toString();
-                        String changePasswordUrl = "http://13.124.223.128/change/changePassword.php";
+                        String changePasswordUrl = "http://"+HomeActivity.singletonData.ipAppData+"/change/changePassword.php";
 
                         if(strChangeInputExistingPassword.equals("")){
                             Toast.makeText(MyProfileActivity.this, "입력정보를 다시 확인해주세요.", Toast.LENGTH_SHORT).show();
@@ -618,7 +618,7 @@ public class MyProfileActivity extends Activity
     }
 
     private void ChangeProfileOriginal(){
-        String chaneProfileUrl = "http://13.124.223.128/change/changeProfile.php";
+        String chaneProfileUrl = "http://"+HomeActivity.singletonData.ipAppData+"/change/changeProfile.php";
         sendData(loginedUser,chaneProfileUrl,CHANGE_PROFILE);
         /*
         AlertDialog.Builder alertDialogProfile = new AlertDialog.Builder(MyProfileActivity.this);
@@ -629,7 +629,7 @@ public class MyProfileActivity extends Activity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 setLog("프로필 변경 확인버튼");
-                String chaneProfileUrl = "http://13.124.223.128/change/changeProfile.php";
+                String chaneProfileUrl = "http://"+HomeActivity.singletonData.ipAppData+"/change/changeProfile.php";
                 sendData(loginedUser,chaneProfileUrl,CHANGE_PROFILE);
             }
         });
@@ -670,7 +670,7 @@ public class MyProfileActivity extends Activity
 
             if (!TextUtils.isEmpty(imagePath)) {
 
-                String ImageUploadURL = "http://13.124.223.128/uploadImg/userProfileImg/uploadUserProfile.php";
+                String ImageUploadURL = "http://"+HomeActivity.singletonData.ipAppData+"/uploadImg/userProfileImg/uploadUserProfile.php";
                 new ImageUploadTask().execute(ImageUploadURL, imagePath);
             } else {
                 Toast.makeText(MyProfileActivity.this, "먼저 업로드할 파일을 선택하세요", Toast.LENGTH_SHORT).show();
@@ -723,8 +723,8 @@ public class MyProfileActivity extends Activity
                 JSONObject jsonObject = JSONParser.uploadImage(params[0],params[1]);
                 if (jsonObject != null){
                     //업로드된 경로를 유저 정보에 프로필 이미기 경로 Update
-                    String profileRoute = "http://13.124.223.128/uploadImg/userProfileImg/"+jsonObject.getString("result");
-                    String url = "http://13.124.223.128/change/changeAlbumProfile.php";
+                    String profileRoute = "http://"+HomeActivity.singletonData.ipAppData+"/uploadImg/userProfileImg/"+jsonObject.getString("result");
+                    String url = "http://"+HomeActivity.singletonData.ipAppData+"/change/changeAlbumProfile.php";
                     sendDataDouble(loginedUser, profileRoute, url, CHANGE_ALBUM_PROFILE );
                 }
             } catch (JSONException e) {
@@ -827,7 +827,7 @@ public class MyProfileActivity extends Activity
                 .into(imgProfile);
 
         //변경된 프로필 이미지 서버에 업로드
-        String ImageUploadURL = "http://13.124.223.128/uploadImg/userProfileImg/uploadUserProfile.php";
+        String ImageUploadURL = "http://"+HomeActivity.singletonData.ipAppData+"/uploadImg/userProfileImg/uploadUserProfile.php";
         new ImageUploadTask().execute(ImageUploadURL, currentPhotoPath);
 
     }

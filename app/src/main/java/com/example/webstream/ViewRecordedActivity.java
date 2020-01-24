@@ -83,7 +83,7 @@ implements View.OnClickListener {
         //routeStreamName 알아내기 위한 split 작업
         //setLog("루트 비디오 : "+routeVideo);
         String[] split ;
-        split = routeVideo.split("http://13.209.207.197/");
+        split = routeVideo.split("http://"+HomeActivity.singletonData.ipStreaming+"/");
         String[] split2;
         split2 = split[1].split(".mp4");
         routeVideoName = split2[0];
@@ -214,7 +214,7 @@ implements View.OnClickListener {
             case GET_CHATLIST:
                 new Thread() {
                     public void run() {
-                        String url = "http://13.124.223.128/recording/getRecordedChatList.php";
+                        String url = "http://"+HomeActivity.singletonData.ipAppData+"/recording/getRecordedChatList.php";
                         httpConn.requestGetChatRecorded(routeVideoName, callback, url);
                     }
                 }.start();

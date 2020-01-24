@@ -184,7 +184,7 @@ public class SignupActivity extends Activity
                     if(strInputId.equals("")){
                         idState = false;
                     }else {
-                        sendData(strInputId,"http://13.124.223.128/signup/checkId.php",CHECKID);
+                        sendData(strInputId,"http://"+HomeActivity.singletonData.ipAppData+"/signup/checkId.php",CHECKID);
                     }
                     break;
 
@@ -194,7 +194,7 @@ public class SignupActivity extends Activity
                     if(strInputPassword.equals("")){
                         passwordState = false;
                     }else {
-                        sendData(strInputPassword,"http://13.124.223.128/signup/checkPassword.php",CHECKPASSWORD);
+                        sendData(strInputPassword,"http://"+HomeActivity.singletonData.ipAppData+"/signup/checkPassword.php",CHECKPASSWORD);
                     }
                     break;
 
@@ -220,7 +220,7 @@ public class SignupActivity extends Activity
                     if(strInputNickname.equals("")){
                         nicknameState = false;
                     }else {
-                        sendData(strInputNickname,"http://13.124.223.128/signup/checkNick.php",CHECKNICKNAME);
+                        sendData(strInputNickname,"http://"+HomeActivity.singletonData.ipAppData+"/signup/checkNick.php",CHECKNICKNAME);
                         nicknameState = true;
                     }
                     break;
@@ -541,14 +541,14 @@ public class SignupActivity extends Activity
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             autoLogin = true;
-                            sendDataSignup(strInputId,strInputPassword,strInputNickname,strInputEmail,"http://13.124.223.128/signup/signup.php",SIGNUP);
+                            sendDataSignup(strInputId,strInputPassword,strInputNickname,strInputEmail,"http://"+HomeActivity.singletonData.ipAppData+"/signup/signup.php",SIGNUP);
                         }
                     })
                     .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             autoLogin = false;
-                            sendDataSignup(strInputId,strInputPassword,strInputNickname,strInputEmail,"http://13.124.223.128/signup/signup.php",SIGNUP);
+                            sendDataSignup(strInputId,strInputPassword,strInputNickname,strInputEmail,"http://"+HomeActivity.singletonData.ipAppData+"/signup/signup.php",SIGNUP);
                         }
                     }).show();
 
