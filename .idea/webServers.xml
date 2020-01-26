@@ -10,6 +10,14 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="42e1585b-e2c3-4284-a289-b89f55a64eb7" name="archiStream" url="http://52.79.222.251">
+        <fileTransfer host="52.79.222.251" port="22" privateKey="C:\key\archiAppServer" rootFolder="/usr/local/WowzaStreamingEngine/content/live" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

@@ -663,6 +663,8 @@ public class BroadcastActivity extends AppCompatActivity
                     };
                     mThread.start();
 
+                }else{
+                    setLog("나머지 : "+response);
                 }
             }
         }, new Response.ErrorListener() {
@@ -973,7 +975,7 @@ public class BroadcastActivity extends AppCompatActivity
                 setLog("2");
                 //Socket c_socket = new Socket("192.168.0.1",8888);
                 //소켓
-                SocketAddress addr = new InetSocketAddress("192.168.0.69",8888);
+                SocketAddress addr = new InetSocketAddress("192.168.0.7",8888);
                 try {
                     c_socket.connect(addr);
 
